@@ -952,7 +952,6 @@ function showStrategyModal() {
         </tbody>
       </table>
       <div class="modal-actions">
-        <a class="btn primary" href="survey.html">개선된 고객 검증 설문(v005) 열기 ↗</a>
         <button type="button" class="btn outline" onclick="document.getElementById('modal').close()">닫기</button>
       </div>
     </div>
@@ -1089,6 +1088,7 @@ $('#loadMoreBtn').onclick = () => {
 };
 
 $('#openSaved').onclick = showSavedModal;
+$('#mobileSavedBtn').onclick = showSavedModal;
 $('#openStrategyModalBtn').onclick = showStrategyModal;
 $('#openCreditsBtn').onclick = showCreditsModal;
 
