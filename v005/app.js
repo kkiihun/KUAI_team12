@@ -180,7 +180,7 @@ function computeCoaching() {
 
   if (r.recommendedFlip && !director.flip180) {
     score -= 22;
-    cue = lang === 'ko' ? '🔄 폰을 180° 거꾸로 뒤집으세요' : lang === 'ja' ? '🔄 スマホを180°逆さまに' : '🔄 Flip phone 180° upside down';
+    cue = lang === 'ko' ? '🔄 폰을 거꾸로 들어 렌즈가 아래로 가게 하세요' : lang === 'ja' ? '🔄 スマホを上下逆さまに（レンズを下へ）' : '🔄 Hold phone upside down (lens at bottom)';
   } else if (r.recommendedLens === '0.5×' && director.lens !== '0.5×') {
     score -= 18;
     cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요' : lang === 'ja' ? '📐 0.5×超広角に切替' : '📐 Switch to 0.5× ultra-wide';
@@ -258,17 +258,98 @@ function renderPoseStrip() {
   }).join('');
 }
 
-// === Voice Coaching ===
+// === Mobile-Safe Voice Coaching (Web Audio Unlock + iOS/Android SpeechSynthesis Fix) ===
+let cachedVoices = [];
+let audioCtx = null;
+
+function refreshVoices() {
+  if ('speechSynthesis' in window) {
+    cachedVoices = window.speechSynthesis.getVoices() || [];
+  }
+}
+refreshVoices();
+if ('speechSynthesis' in window && 'onvoiceschanged' in window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+}
+
+function playAudioChime() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.09);
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  } catch {}
+}
+
+function setSpeakingVisual(on) {
+  const btn = $('#speakCueBtn');
+  const cue = $('.vf-cue');
+  if (btn) btn.classList.toggle('is-speaking', on);
+  if (cue) cue.classList.toggle('is-speaking', on);
+}
+
 function speakCoaching() {
+  playAudioChime();
   const coaching = computeCoaching();
   const rt = getActiveRecipe()[lang] || getActiveRecipe().ko;
-  const text = `${coaching.cue}. ${rt.shortCue}`.replace(/[🔄👣🦶📐✨⚖️]/g, '');
-  toast(t('toastVoice'));
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+  const text = `${coaching.cue}. ${rt.shortCue}`.replace(/[🔄👣🦶📐✨⚖️📱]/g, '').trim();
+
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+    toast(t('toastAudioMuted'));
+    return;
+  }
+
+  try {
+    const synth = window.speechSynthesis;
+    if (synth.speaking || synth.pending) synth.cancel();
+    if (synth.paused) synth.resume();
+
+    const targetLang = lang === 'ko' ? 'ko-KR' : lang === 'ja' ? 'ja-JP' : 'en-US';
+    const prefix = targetLang.slice(0, 2);
+    refreshVoices();
+    const matchedVoice = cachedVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix) && v.localService)
+      || cachedVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix));
+
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang === 'ko' ? 'ko-KR' : lang === 'ja' ? 'ja-JP' : 'en-US';
-    window.speechSynthesis.speak(u);
+    u.lang = targetLang;
+    if (matchedVoice) u.voice = matchedVoice;
+    u.volume = 1.0;
+    u.rate = 0.98;
+    u.pitch = 1.0;
+
+    // Keep global reference to prevent Chrome/Safari GC bug cutting off speech
+    window._pilkUtterance = u;
+    let started = false;
+
+    u.onstart = () => { started = true; setSpeakingVisual(true); };
+    u.onend = () => { setSpeakingVisual(false); };
+    u.onerror = () => { setSpeakingVisual(false); toast(t('toastAudioMuted')); };
+
+    toast(t('toastVoice'));
+    setSpeakingVisual(true);
+    synth.speak(u);
+
+    // Fallback check: if mobile silent mode or in-app browser blocked TTS
+    setTimeout(() => {
+      if (!started && !synth.speaking) {
+        setSpeakingVisual(false);
+        toast(t('toastAudioMuted'));
+      }
+    }, 1300);
+  } catch {
+    setSpeakingVisual(false);
+    toast(t('toastAudioMuted'));
   }
 }
 
@@ -373,7 +454,7 @@ function renderNearbyPage() {
           <span class="nearby-walk">🚶 ${item.walk}</span>
         </div>
         <b>${itemName}</b>
-        <div class="nearby-deal">🎁 ${item.deal[lang] || item.deal.ko}</div>
+        <div class="nearby-deal"><span class="sample-tag">${t('couponTag')}</span>🎁 ${item.deal[lang] || item.deal.ko}</div>
         <div class="nearby-btns">
           <button type="button" class="btn sm ${claimed ? 'claimed' : 'dark'}" style="flex:1" data-claim-coupon="${cid}">
             ${claimed ? t('couponClaimed') : t('claimCoupon')}
@@ -473,11 +554,11 @@ function renderSavedPage() {
         const item = nearbyPools[pool]?.[+idx];
         if (!item) return '';
         return `<div class="saved-row">
-          <div><b>🎁 ${item.name[lang] || item.name.ko}</b><small>${item.deal[lang] || item.deal.ko}</small></div>
+          <div><b>🎁 ${item.name[lang] || item.name.ko}</b><small><span class="sample-tag">${t('couponTag')}</span>${item.deal[lang] || item.deal.ko}</small></div>
           <button type="button" class="btn sm outline" data-remove-coupon="${cid}">${icon('trash')}</button>
         </div>`;
       }).join('')}
-    </div></div>`;
+    </div><p class="coupon-disclaimer" style="text-align:left">${t('couponDisclaimer')}</p></div>`;
   }
 
   if (savedSpots.length) {
@@ -679,6 +760,43 @@ function showSpotDetail(id) {
   `);
 }
 
+function showFlipGuideModal() {
+  openModal(`
+    <div class="modal-body">
+      <h2>${t('flipGuideTitle')}</h2>
+      <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">${t('flipGuideDesc')}</p>
+      <div class="flip-compare">
+        <div class="flip-box">
+          <svg viewBox="0 0 80 104" fill="none" aria-hidden="true">
+            <rect x="18" y="8" width="44" height="78" rx="9" fill="#232623" stroke="#999" stroke-width="2"/>
+            <rect x="24" y="14" width="14" height="18" rx="4" fill="#444"/>
+            <circle cx="31" cy="20" r="3" fill="#fff"/>
+            <circle cx="31" cy="27" r="3" fill="#fff"/>
+            <text x="40" y="99" fill="#777" font-size="9" font-weight="700" text-anchor="middle" font-family="sans-serif">LENS TOP</text>
+          </svg>
+          <b>${t('flipGuideNormal')}</b>
+          <small>${t('flipGuideNormalNote')}</small>
+        </div>
+        <div class="flip-box good">
+          <svg viewBox="0 0 80 104" fill="none" aria-hidden="true">
+            <rect x="18" y="8" width="44" height="78" rx="9" fill="#181b18" stroke="#ff5a36" stroke-width="2.5"/>
+            <rect x="42" y="62" width="14" height="18" rx="4" fill="#ff5a36"/>
+            <circle cx="49" cy="68" r="3" fill="#fff"/>
+            <circle cx="49" cy="75" r="3" fill="#fff"/>
+            <path d="M10 48 A 32 32 0 0 1 18 22" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/>
+            <text x="40" y="99" fill="#ff5a36" font-size="9" font-weight="800" text-anchor="middle" font-family="sans-serif">180° LENS BOTTOM</text>
+          </svg>
+          <b>${t('flipGuideInverted')}</b>
+          <small>${t('flipGuideInvertedNote')}</small>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn primary" style="width:100%" onclick="document.getElementById('modal').close()">OK</button>
+      </div>
+    </div>
+  `);
+}
+
 function showStrategyModal() {
   openModal(`
     <div class="modal-body">
@@ -746,6 +864,7 @@ $$('.mseg').forEach(b => {
 });
 
 $('#btnFlip180').onclick = () => { director.flip180 = !director.flip180; updateCameraUI(); };
+$('#flipHelpBtn').onclick = showFlipGuideModal;
 $('#btnFrontFoot').onclick = () => { director.frontFoot = !director.frontFoot; updateCameraUI(); };
 
 const lensList = ['0.5×', '1×', '2×'];

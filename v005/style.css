@@ -250,6 +250,32 @@ svg.icon {
   background: var(--bg); border: 1px solid var(--line); white-space: nowrap;
 }
 .qchip.active { background: var(--coral-soft); border-color: var(--coral); color: #c73c1c; }
+.qhelp {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 800;
+  display: grid; place-items: center;
+}
+.shutter-btn-side.is-speaking { color: #ff8c69; animation: pulseSpeak 0.8s ease-in-out infinite; }
+.vf-cue.is-speaking { border-left-color: #4ade80; box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.45); }
+@keyframes pulseSpeak { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.coupon-disclaimer {
+  margin: 12px 4px 0; font-size: 11px; color: var(--muted); text-align: center;
+}
+.sample-tag {
+  display: inline-block; font-size: 10px; font-weight: 800;
+  background: var(--soft); color: var(--muted); padding: 1px 5px; border-radius: 4px; margin-right: 4px;
+}
+.flip-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0;
+}
+.flip-box {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 13px;
+  padding: 12px 10px; text-align: center;
+}
+.flip-box.good { background: var(--coral-soft); border-color: #ffc5b4; }
+.flip-box svg { width: 72px; height: 92px; display: block; margin: 0 auto 8px; }
+.flip-box b { display: block; font-size: 12px; margin-bottom: 3px; }
+.flip-box small { display: block; font-size: 11px; color: var(--muted); line-height: 1.4; }
 
 /* ==================== SHARED PAGE HEADER ==================== */
 .page-head {
