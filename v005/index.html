@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -27,10 +27,15 @@
     <button type="button" class="dtab" data-tab="saved" data-t="tabSaved"></button>
   </nav>
 
-  <div class="lang-pill" role="group" aria-label="Language">
-    <button type="button" id="lang-ko" class="selected" aria-pressed="true">KR</button>
-    <button type="button" id="lang-en" aria-pressed="false">EN</button>
-    <button type="button" id="lang-ja" aria-pressed="false">JP</button>
+  <div class="bar-right">
+    <button type="button" class="ai-trigger-btn" id="openChatBtn">
+      <span>✨</span><span data-t="aiBtn"></span>
+    </button>
+    <div class="lang-pill" role="group" aria-label="Language">
+      <button type="button" id="lang-ko" class="selected" aria-pressed="true">KR</button>
+      <button type="button" id="lang-en" aria-pressed="false">EN</button>
+      <button type="button" id="lang-ja" aria-pressed="false">JP</button>
+    </div>
   </div>
 </header>
 
@@ -206,9 +211,6 @@
 
     <div class="settings-card">
       <h3 data-t="infoTitle"></h3>
-      <button type="button" class="info-link-row" id="openStrategyModalBtn">
-        <span data-t="footerStrategy"></span><span>↗</span>
-      </button>
       <button type="button" class="info-link-row" id="openCreditsBtn">
         <span data-t="footerCredits"></span><span>↗</span>
       </button>
@@ -235,6 +237,38 @@
   </button>
 </nav>
 
+<!-- AI COACH BOTTOM SHEET (UPSTAGE SOLAR PRO) -->
+<div class="chat-backdrop hidden" id="chatBackdrop">
+  <section class="chat-sheet" id="chatSheet" role="dialog" aria-modal="true" aria-label="PILK AI Coach">
+    <div class="chat-head">
+      <div class="chat-head-left">
+        <span class="chat-spark">✨</span>
+        <div>
+          <b data-t="aiTitle"></b>
+          <small id="chatContextLine">📍 성수 연무장길</small>
+        </div>
+      </div>
+      <div class="chat-head-right">
+        <span class="model-pill" id="chatModelBadge">Solar Pro</span>
+        <button type="button" class="chat-close-btn" id="closeChatBtn" aria-label="Close">✕</button>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="chat-chips" id="chatChips">
+      <button type="button" class="chat-chip" data-quick-q="aiChip1" data-t="aiChip1"></button>
+      <button type="button" class="chat-chip" data-quick-q="aiChip2" data-t="aiChip2"></button>
+      <button type="button" class="chat-chip" data-quick-q="aiChip3" data-t="aiChip3"></button>
+    </div>
+
+    <form class="chat-form" id="chatForm">
+      <input type="text" id="chatInput" data-placeholder="aiPlaceholder" autocomplete="off">
+      <button type="submit" class="chat-send-btn" id="chatSendBtn" data-t="aiSend"></button>
+    </form>
+  </section>
+</div>
+
 <dialog id="modal">
   <button type="button" class="modal-close" id="closeModal" aria-label="Close">✕</button>
   <div id="modalContent"></div>
@@ -242,8 +276,8 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="spots-data.js?v=7"></script>
-<script src="pilk-data.js?v=7"></script>
-<script src="app.js?v=7"></script>
+<script src="spots-data.js?v=9"></script>
+<script src="pilk-data.js?v=9"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

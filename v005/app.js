@@ -33,7 +33,7 @@ const director = {
   mode: 'A',
   flip180: true,
   frontFoot: true,
-  lens: '1×',
+  lens: '0.5×',
   distance: 0, // -1 | 0 | 1
   opacity: 72,
   showGrid: true,
@@ -180,7 +180,7 @@ function computeCoaching() {
 
   if (r.recommendedFlip && !director.flip180) {
     score -= 22;
-    cue = lang === 'ko' ? '🔄 폰을 거꾸로 들어 렌즈가 아래로 가게 하세요' : lang === 'ja' ? '🔄 スマホを上下逆さまに（レンズを下へ）' : '🔄 Hold phone upside down (lens at bottom)';
+    cue = lang === 'ko' ? '📐 항공샷: 폰을 머리 위로 높이 들어 45° 내려찍으세요' : lang === 'ja' ? '📐 航空ショット: スマホを頭上から45°見下ろして' : '📐 High Angle: Hold phone high overhead tilted 45° down';
   } else if (r.recommendedLens === '0.5×' && director.lens !== '0.5×') {
     score -= 18;
     cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요' : lang === 'ja' ? '📐 0.5×超広角に切替' : '📐 Switch to 0.5× ultra-wide';
@@ -378,7 +378,7 @@ function analyzeCanvasPixels() {
 }
 
 function shortLightLabel(stats, spot) {
-  const setup = `${spot.recipe.flip ? '180°' : '기본'} · ${spot.recipe.lens}`;
+  const setup = `${spot.recipe.flip ? t('flipShort') : '1×'} · ${spot.recipe.lens}`;
   if (!stats) return setup;
   const b = stats.brightness;
   if (lang === 'ko') return `${b < 35 ? '야간' : b > 72 ? '밝은 야외' : '자연광'} (${b}%) · ${setup}`;
@@ -508,7 +508,7 @@ function renderSpotsPage() {
         <div style="position:relative">
           <button type="button" class="spot-photo-btn" data-load-spot="${s.id}" aria-label="${a[0]}">
             <img src="assets/${s.image}" alt="${a[0]}" loading="lazy">
-            <span class="spot-badge">${s.recipe.flip ? '180°' : s.recipe.lens}</span>
+            <span class="spot-badge">${s.recipe.flip ? t('flipShort') : s.recipe.lens}</span>
           </button>
           <button type="button" class="spot-save ${isSaved ? 'is-saved' : ''}" data-save-spot="${s.id}" aria-label="Save">
             ${icon('bookmark')}
@@ -768,23 +768,21 @@ function showFlipGuideModal() {
       <div class="flip-compare">
         <div class="flip-box">
           <svg viewBox="0 0 80 104" fill="none" aria-hidden="true">
-            <rect x="18" y="8" width="44" height="78" rx="9" fill="#232623" stroke="#999" stroke-width="2"/>
-            <rect x="24" y="14" width="14" height="18" rx="4" fill="#444"/>
-            <circle cx="31" cy="20" r="3" fill="#fff"/>
-            <circle cx="31" cy="27" r="3" fill="#fff"/>
-            <text x="40" y="99" fill="#777" font-size="9" font-weight="700" text-anchor="middle" font-family="sans-serif">LENS TOP</text>
+            <circle cx="28" cy="36" r="10" stroke="#777" stroke-width="2"/>
+            <path d="M28 46 V78 M18 58 H38 M28 78 L20 96 M28 78 L36 96" stroke="#777" stroke-width="2" stroke-linecap="round"/>
+            <rect x="54" y="28" width="16" height="24" rx="4" fill="#232623" stroke="#999" stroke-width="1.5"/>
+            <path d="M52 40 H40" stroke="#999" stroke-width="1.5" stroke-dasharray="3 2"/>
           </svg>
           <b>${t('flipGuideNormal')}</b>
           <small>${t('flipGuideNormalNote')}</small>
         </div>
         <div class="flip-box good">
           <svg viewBox="0 0 80 104" fill="none" aria-hidden="true">
-            <rect x="18" y="8" width="44" height="78" rx="9" fill="#181b18" stroke="#ff5a36" stroke-width="2.5"/>
-            <rect x="42" y="62" width="14" height="18" rx="4" fill="#ff5a36"/>
-            <circle cx="49" cy="68" r="3" fill="#fff"/>
-            <circle cx="49" cy="75" r="3" fill="#fff"/>
-            <path d="M10 48 A 32 32 0 0 1 18 22" stroke="#ff5a36" stroke-width="2" stroke-linecap="round"/>
-            <text x="40" y="99" fill="#ff5a36" font-size="9" font-weight="800" text-anchor="middle" font-family="sans-serif">180° LENS BOTTOM</text>
+            <circle cx="28" cy="46" r="10" stroke="#ff5a36" stroke-width="2.2"/>
+            <path d="M28 56 V80 M18 66 H38 M28 80 L20 96 M28 80 L36 96" stroke="#ff5a36" stroke-width="2.2" stroke-linecap="round"/>
+            <g transform="rotate(35 60 18)"><rect x="52" y="6" width="16" height="24" rx="4" fill="#ff5a36"/></g>
+            <path d="M52 24 L36 40" stroke="#ff5a36" stroke-width="2" stroke-dasharray="3 2"/>
+            <text x="58" y="48" fill="#ff5a36" font-size="9" font-weight="800" text-anchor="middle" font-family="sans-serif">45° ↙</text>
           </svg>
           <b>${t('flipGuideInverted')}</b>
           <small>${t('flipGuideInvertedNote')}</small>
@@ -793,21 +791,6 @@ function showFlipGuideModal() {
       <div class="modal-actions">
         <button type="button" class="btn primary" style="width:100%" onclick="document.getElementById('modal').close()">OK</button>
       </div>
-    </div>
-  `);
-}
-
-function showStrategyModal() {
-  openModal(`
-    <div class="modal-body">
-      <h2>PILK v005 피벗 전략 요약</h2>
-      <table class="strategy-table">
-        <tr><th>한복 한계 돌파</th><td>방한 외국인 90%+ 일상·핫플 촬영으로 확장 (44개 스팟 + 주변 카페/팝업 제휴)</td></tr>
-        <tr><th>배포 전략</th><td>설치 없는 모바일 웹(QR) → IG 스토리 바이럴 → SNS/카메라 플러그인 확장</td></tr>
-        <tr><th>수익 모델</th><td>로컬 제휴 성과 수수료(8~12% / CPA ₩1,500) + 단기 여행 패스($2.99~4.99)</td></tr>
-        <tr><th>차별화 핵심</th><td>180° 폰 뒤집기·발끝 정렬·앞발 빼기 실시간 코칭 + 배경 자동 인식 주변 추천</td></tr>
-      </table>
-      <p style="font-size:11.5px;color:var(--muted);margin:0">전체 보고서: <code>v005/MENTOR_FEEDBACK_AND_STRATEGY.md</code></p>
     </div>
   `);
 }
@@ -824,6 +807,137 @@ function showCreditsModal() {
   `);
 }
 
+// === AI Coach Chat (Upstage Solar Pro via /api/chat + Graceful Local Fallback) ===
+const chatState = {
+  open: false,
+  sending: false,
+  liveModel: false,
+  history: [] // { role: 'user'|'assistant', content: string }
+};
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+function formatChatMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\n/g, '<br>');
+}
+
+function localFallbackReply(userMsg) {
+  const spot = getActiveSpot();
+  const sText = spot[lang] || spot.ko;
+  const q = userMsg.toLowerCase();
+  if (lang === 'en') {
+    if (q.includes('rain') || q.includes('indoor')) return '☔ Rainy-day spots:\n• **The Hyundai Seoul** — bright skylight, try 0.5× from upper railings!\n• **Seongsu Showrooms** — 15° mirror selfie + front foot out.';
+    if (q.includes('10s') || q.includes('friend')) return '👥 10s script for your friend:\n1. Hold phone upside down (lens bottom)\n2. Put toes on bottom line\n3. Leave 35% space above head & tap 3 burst shots!';
+    return `✨ Tips for **${sText[0]}**:\n• Hold phone **upside down** (lens at bottom) at waist height.\n• Align toes to the bottom line & extend front foot half a step.`;
+  }
+  if (lang === 'ja') {
+    if (q.includes('雨') || q.includes('屋内')) return '☔ 雨の日の屋内おすすめ：\n• **ザ・現代ソウル** — 上階から0.5×広角が最高！\n• **聖水ショールーム** — 15°斜め鏡セルフィー＋前足出し。';
+    if (q.includes('10秒') || q.includes('撮って')) return '👥 10秒お願いセリフ：\n1. スマホを上下逆さま（レンズ下）に持って！\n2. つま先を画面下端に！\n3. 頭上35%余白を残して3枚連写！';
+    return `✨ **${sText[0]}** 撮影のコツ：\n• スマホを**逆さま（レンズ下）**にして腰の高さで撮影。\n• つま先を下端に合わせ、前足を半歩前に出しましょう！`;
+  }
+  if (q.includes('비') || q.includes('실내')) return '☔ 비 올 때 실내 추천:\n• **더현대 서울** — 유리 천장 자연광, 위층에서 0.5× 광각 추천!\n• **성수·한남 쇼룸** — 전신거울 15° 사선 + 앞발 빼기 거울셀카.';
+  if (q.includes('친구') || q.includes('10초') || q.includes('설명')) return '👥 친구·행인 10초 설명:\n1. "폰을 위아래로 거꾸로(렌즈 아래로) 잡아줘!"\n2. "발끝을 화면 맨 아래 선에 딱 맞춰줘!"\n3. "머리 위 여백 남기고 3장만 연사해줘!"';
+  return `✨ **${sText[0]}** 한국식 인생샷 팁:\n• **폰을 거꾸로(렌즈 아래로)** 들어 배꼽 높이에서 찍으면 다리가 훨씬 길어 보여요.\n• 발끝을 하단 선에 맞추고 **앞발을 반 걸음** 빼보세요!`;
+}
+
+function updateChatHeaderContext() {
+  const spot = getActiveSpot();
+  const sText = spot[lang] || spot.ko;
+  const rText = getActiveRecipe()[lang] || getActiveRecipe().ko;
+  const line = $('#chatContextLine');
+  if (line) line.textContent = `📍 ${sText[0]} · ${rText.chip}`;
+  const badge = $('#chatModelBadge');
+  if (badge) {
+    badge.textContent = chatState.liveModel ? 'Solar Pro · LIVE' : 'Solar Pro · Demo';
+    badge.classList.toggle('live', chatState.liveModel);
+  }
+}
+
+function renderChatMessages() {
+  const box = $('#chatMessages');
+  if (!box) return;
+  const items = [
+    `<div class="msg-bubble ai">${formatChatMarkdown(t('aiWelcome'))}</div>`,
+    ...chatState.history.map(m => `<div class="msg-bubble ${m.role === 'user' ? 'user' : 'ai'}">${formatChatMarkdown(m.content)}</div>`),
+    ...(chatState.sending ? [`<div class="msg-bubble ai typing">${escapeHtml(t('aiTyping'))}</div>`] : [])
+  ];
+  box.innerHTML = items.join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function checkChatStatus() {
+  try {
+    const r = await fetch('/api/chat-status');
+    if (r.ok) {
+      const d = await r.json();
+      chatState.liveModel = Boolean(d.live);
+      updateChatHeaderContext();
+    }
+  } catch {}
+}
+
+function openChatSheet() {
+  chatState.open = true;
+  $('#chatBackdrop').classList.remove('hidden');
+  updateChatHeaderContext();
+  renderChatMessages();
+  checkChatStatus();
+}
+
+function closeChatSheet() {
+  chatState.open = false;
+  $('#chatBackdrop').classList.add('hidden');
+}
+
+async function sendChatMessage(rawText) {
+  const text = rawText.trim();
+  if (!text || chatState.sending) return;
+
+  chatState.history.push({ role: 'user', content: text });
+  chatState.sending = true;
+  $('#chatInput').value = '';
+  $('#chatSendBtn').disabled = true;
+  renderChatMessages();
+
+  const spot = getActiveSpot();
+  const sText = spot[lang] || spot.ko;
+  const rText = getActiveRecipe()[lang] || getActiveRecipe().ko;
+
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: chatState.history.slice(-8),
+        context: {
+          lang,
+          spotName: sText[0],
+          spotArea: sText[1],
+          poseName: rText.chip,
+          lens: director.lens,
+          flip180: director.flip180
+        }
+      })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    chatState.liveModel = !data.demo;
+    chatState.history.push({ role: 'assistant', content: data.reply || localFallbackReply(text) });
+  } catch {
+    chatState.liveModel = false;
+    chatState.history.push({ role: 'assistant', content: localFallbackReply(text) });
+  } finally {
+    chatState.sending = false;
+    $('#chatSendBtn').disabled = false;
+    updateChatHeaderContext();
+    renderChatMessages();
+  }
+}
+
 function renderAll() {
   document.documentElement.lang = lang;
   hydrate();
@@ -838,6 +952,8 @@ function renderAll() {
   renderSpotsPage();
   renderSavedPage();
   updateSaveBadge();
+  updateChatHeaderContext();
+  if (chatState.open) renderChatMessages();
 }
 
 // === Event Bindings ===
@@ -898,12 +1014,23 @@ $('#uploadSceneInput').onchange = e => {
 
 $('#searchInput').oninput = e => { searchQuery = e.target.value; spotLimit = 8; renderSpotsPage(); };
 $('#loadMoreBtn').onclick = () => { spotLimit += 8; renderSpotsPage(); };
-$('#openStrategyModalBtn').onclick = showStrategyModal;
 $('#openCreditsBtn').onclick = showCreditsModal;
+$('#openChatBtn').onclick = openChatSheet;
+$('#closeChatBtn').onclick = closeChatSheet;
+$('#chatBackdrop').onclick = e => { if (e.target === $('#chatBackdrop')) closeChatSheet(); };
+$('#chatForm').onsubmit = e => {
+  e.preventDefault();
+  sendChatMessage($('#chatInput').value);
+};
 
 document.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
+
+  if (b.dataset.quickQ) {
+    sendChatMessage(t(b.dataset.quickQ));
+    return;
+  }
 
   if (b.dataset.tab) {
     switchTab(b.dataset.tab);
