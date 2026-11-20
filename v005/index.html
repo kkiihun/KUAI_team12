@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -57,6 +57,9 @@
           <div class="vf-top-right">
             <button type="button" class="scan-pill-btn" id="vfScanBtn">
               <span data-icon="scan"></span><span data-t="scanAction"></span>
+            </button>
+            <button type="button" class="glass-btn" id="switchFacingBtn" aria-label="Switch front/rear camera">
+              <span data-icon="flipcam"></span>
             </button>
             <button type="button" class="glass-btn" id="helperModeBtn" aria-label="10s Helper Card">👥</button>
           </div>
@@ -139,6 +142,14 @@
       <span class="ai-pill">AI</span>
     </div>
 
+    <div class="nearby-map-card">
+      <iframe id="nearbyMapFrame" title="Nearby Spot Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      <div class="map-bar">
+        <span class="map-label" id="nearbyMapLabel">📍 성수 연무장길</span>
+        <a class="map-ext-link" id="nearbyMapLink" href="#" target="_blank" rel="noopener noreferrer" data-t="openBigMap"></a>
+      </div>
+    </div>
+
     <div class="nearby-stack" id="nearbyList"></div>
   </section>
 
@@ -154,7 +165,8 @@
 
     <div class="pill-scroll filter-row">
       <button type="button" class="filter-chip selected" data-filter="all"><span data-t="filterAll"></span></button>
-      <button type="button" class="filter-chip" data-filter="local"><span data-t="filterLocal"></span></button>
+      <button type="button" class="filter-chip" data-filter="insta"><span data-t="filterInsta"></span></button>
+      <button type="button" class="filter-chip" data-filter="tiktok"><span data-t="filterTiktok"></span></button>
       <button type="button" class="filter-chip" data-filter="drama"><span data-t="filterDrama"></span></button>
       <button type="button" class="filter-chip" data-filter="heritage"><span data-t="filterHeritage"></span></button>
       <button type="button" class="filter-chip" data-filter="nature"><span data-t="filterNature"></span></button>
@@ -228,8 +240,8 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="spots-data.js?v=4"></script>
-<script src="pilk-data.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="spots-data.js?v=6"></script>
+<script src="pilk-data.js?v=6"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

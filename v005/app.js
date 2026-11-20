@@ -9,6 +9,7 @@ const icons = {
   upload: 'M12 16V4m0 0-4 4m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2',
   spark: 'm12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z',
   volume: 'M11 5 6 9H2v6h4l5 4V5zm4.5 3.5a5 5 0 0 1 0 7m2.8-9.8a9 9 0 0 1 0 12.6',
+  flipcam: 'M20 7h-3l-2-2H9L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM9 13a3 3 0 0 1 5.2-2l1.3 1.3M15 13a3 3 0 0 1-5.2 2l-1.3-1.3',
   trash: 'M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7'
 };
 
@@ -38,9 +39,11 @@ const director = {
   showGrid: true,
   helperOpen: false,
   tiltDeg: 0,
+  facingMode: 'environment', // 'environment' (rear) | 'user' (front selfie)
   stream: null,
   cameraToken: 0,
-  lastLight: null
+  lastLight: null,
+  lastMapUrl: ''
 };
 
 try {
@@ -334,7 +337,19 @@ function runBackgroundScan(openNearbyAfter = true) {
   }, 560);
 }
 
-// === Page 2: Nearby & Coupons ===
+// === Page 2: Nearby & Coupons + Interactive Map ===
+function updateNearbyMap(mapQuery, labelText) {
+  const frame = $('#nearbyMapFrame');
+  const hl = lang === 'ko' ? 'ko' : lang === 'ja' ? 'ja' : 'en';
+  const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&hl=${hl}&z=15&output=embed`;
+  if (frame && director.lastMapUrl !== embedUrl) {
+    director.lastMapUrl = embedUrl;
+    frame.src = embedUrl;
+  }
+  $('#nearbyMapLabel').textContent = `📍 ${labelText}`;
+  $('#nearbyMapLink').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+}
+
 function renderNearbyPage() {
   const spot = getActiveSpot();
   const sText = spot[lang] || spot.ko;
@@ -343,21 +358,28 @@ function renderNearbyPage() {
   $('#nearbyThumb').src = director.customPhotoUrl || `assets/${spot.image}`;
   $('#scanSpotTitle').textContent = sText[0];
   $('#scanLightTag').textContent = shortLightLabel(director.lastLight, spot);
+  updateNearbyMap(spot.map || sText[0], sText[0]);
 
   $('#nearbyList').innerHTML = nearby.map((item, idx) => {
     const cid = `${spot.pool}_${idx}`;
     const claimed = claimedCoupons.includes(cid);
+    const targetSpot = spots.find(x => x.id === item.spotId);
+    const mapQuery = targetSpot ? targetSpot.map : `${item.name.ko} ${sText[1]}`;
+    const itemName = item.name[lang] || item.name.ko;
     return `
       <article class="nearby-item-card">
         <div class="nearby-meta">
           <span class="nearby-cat">${item.cat[lang] || item.cat.ko}</span>
           <span class="nearby-walk">🚶 ${item.walk}</span>
         </div>
-        <b>${item.name[lang] || item.name.ko}</b>
+        <b>${itemName}</b>
         <div class="nearby-deal">🎁 ${item.deal[lang] || item.deal.ko}</div>
         <div class="nearby-btns">
           <button type="button" class="btn sm ${claimed ? 'claimed' : 'dark'}" style="flex:1" data-claim-coupon="${cid}">
             ${claimed ? t('couponClaimed') : t('claimCoupon')}
+          </button>
+          <button type="button" class="btn sm outline" data-focus-map="${encodeURIComponent(mapQuery)}" data-focus-label="${encodeURIComponent(itemName)}">
+            ${t('openMap')}
           </button>
           ${item.spotId && item.spotId !== spot.id ? `
             <button type="button" class="btn sm outline" data-load-spot="${item.spotId}">${t('useScene')}</button>
@@ -368,9 +390,21 @@ function renderNearbyPage() {
   }).join('');
 }
 
-// === Page 3: Spots ===
+// === Page 3: Spots (Instagram & TikTok Trending Filters) ===
+const instaSpotIds = new Set([
+  'seongsu', 'hyundai', 'yeonnam', 'hannam', 'euljiro', 'seochon', 'haebangchon',
+  'songridan', 'seoulforest', 'bukchon', 'gyeongbok', 'eunpyeong', 'olympic', 'hyeopjae', 'anmok'
+]);
+const tiktokSpotIds = new Set([
+  'seongsu', 'hyundai', 'mangwon', 'euljiro', 'haebangchon', 'seoulforest',
+  'noksapyeong', 'nseoul', 'mongted', 'gwangalli', 'yeouido', 'jumunjin'
+]);
+
 function spotMatches(s, type) {
-  return type === 'all' || s.type === type || (type === 'nature' && s.nature);
+  if (type === 'all') return true;
+  if (type === 'insta') return instaSpotIds.has(s.id);
+  if (type === 'tiktok') return tiktokSpotIds.has(s.id);
+  return s.type === type || (type === 'nature' && s.nature);
 }
 
 function renderSpotsPage() {
@@ -473,7 +507,7 @@ function updateSaveBadge() {
   badge.classList.toggle('hidden', total === 0);
 }
 
-// === Live Camera & Capture ===
+// === Live Camera (Front/Rear Facing Switch) & Capture ===
 function stopCamera() {
   director.cameraToken++;
   if (director.stream) {
@@ -481,18 +515,17 @@ function stopCamera() {
     director.stream = null;
   }
   const v = $('#stageVideo');
-  if (v) { v.srcObject = null; v.style.display = 'none'; }
+  if (v) { v.srcObject = null; v.style.display = 'none'; v.classList.remove('is-mirrored'); }
   $('#toggleCamBtn').classList.remove('active');
   $('#toggleCamLabel').textContent = t('dockCamOn');
 }
 
-async function toggleCamera() {
-  if (director.stream) { stopCamera(); return; }
+async function startCameraStream() {
   const token = ++director.cameraToken;
   try {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('Unavailable');
     const media = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1600 }, height: { ideal: 1200 } },
+      video: { facingMode: { ideal: director.facingMode }, width: { ideal: 1600 }, height: { ideal: 1200 } },
       audio: false
     });
     if (token !== director.cameraToken) { media.getTracks().forEach(tr => tr.stop()); return; }
@@ -501,11 +534,28 @@ async function toggleCamera() {
     v.srcObject = media;
     await v.play();
     v.style.display = 'block';
+    v.classList.toggle('is-mirrored', director.facingMode === 'user');
     $('#toggleCamBtn').classList.add('active');
     $('#toggleCamLabel').textContent = t('dockCamOff');
     enableGyro();
   } catch {
     if (token === director.cameraToken) toast(t('toastCameraFail'));
+  }
+}
+
+async function toggleCamera() {
+  if (director.stream) { stopCamera(); return; }
+  await startCameraStream();
+}
+
+async function switchCameraFacing() {
+  director.facingMode = director.facingMode === 'environment' ? 'user' : 'environment';
+  $('#switchFacingBtn').classList.toggle('is-front', director.facingMode === 'user');
+  toast(director.facingMode === 'user' ? t('toastFrontCam') : t('toastRearCam'));
+  if (director.stream) {
+    // Stop active tracks first so iOS Safari cleanly switches lenses without NotReadableError
+    stopCamera();
+    await startCameraStream();
   }
 }
 
@@ -538,10 +588,12 @@ function captureViewfinder(asStory = false) {
   if (!sw || !sh) return toast(t('toastCameraFail'));
 
   try {
+    const mirror = isLive && director.facingMode === 'user';
     const c = document.createElement('canvas');
     const ctx = c.getContext('2d');
     if (!asStory) {
       c.width = sw; c.height = sh;
+      if (mirror) { ctx.translate(sw, 0); ctx.scale(-1, 1); }
       ctx.drawImage(src, 0, 0, sw, sh);
       downloadCanvas(c, `pilk-${Date.now()}.jpg`, 'image/jpeg', 0.93);
       return toast(t('toastPhotoSaved'));
@@ -558,6 +610,7 @@ function captureViewfinder(asStory = false) {
     if (ctx.roundRect) ctx.roundRect(pad, topY, pW, pH, 40);
     else ctx.rect(pad, topY, pW, pH);
     ctx.clip();
+    if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
     ctx.drawImage(src, pad + (pW - sw * sc) / 2, topY + (pH - sh * sc) / 2, sw * sc, sh * sc);
     ctx.restore();
 
@@ -675,6 +728,7 @@ function renderAll() {
 });
 
 $('#toggleCamBtn').onclick = toggleCamera;
+$('#switchFacingBtn').onclick = switchCameraFacing;
 $('#shutterBtn').onclick = () => captureViewfinder(false);
 $('#exportStoryBtn').onclick = () => captureViewfinder(true);
 $('#speakCueBtn').onclick = speakCoaching;
@@ -734,6 +788,12 @@ document.addEventListener('click', e => {
 
   if (b.dataset.tab) {
     switchTab(b.dataset.tab);
+    return;
+  }
+
+  if (b.dataset.focusMap) {
+    updateNearbyMap(decodeURIComponent(b.dataset.focusMap), decodeURIComponent(b.dataset.focusLabel || ''));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
 

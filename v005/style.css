@@ -81,6 +81,7 @@ svg.icon {
   object-fit: cover; transition: transform 0.22s ease;
 }
 .viewfinder > video { display: none; }
+.viewfinder > video.is-mirrored { transform: scaleX(-1); }
 .viewfinder::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(0,0,0,0.42) 0%, transparent 22%, transparent 68%, rgba(0,0,0,0.72) 100%);
@@ -147,9 +148,11 @@ svg.icon {
 .glass-btn {
   width: 30px; height: 30px; border-radius: 50%;
   background: rgba(16, 18, 16, 0.68); backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.2); font-size: 13px;
-  display: grid; place-items: center; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 13px;
+  display: grid; place-items: center; flex-shrink: 0; transition: transform 0.25s ease;
 }
+.glass-btn svg { width: 15px; height: 15px; }
+.glass-btn.is-front { border-color: #4ade80; color: #4ade80; transform: rotate(180deg); }
 
 /* Mode B 3-Step Strip */
 .vf-steps {
@@ -269,6 +272,20 @@ svg.icon {
   background: var(--mint-soft); color: #15803d; font-size: 10px; font-weight: 800;
   padding: 4px 8px; border-radius: 99px;
 }
+
+.nearby-map-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden; margin-bottom: 14px;
+}
+.nearby-map-card iframe {
+  display: block; width: 100%; height: 190px; border: 0; background: #e8e5dc;
+}
+.map-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px 13px; border-top: 1px solid var(--soft); font-size: 12px;
+}
+.map-label { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-ext-link { color: var(--coral); font-weight: 700; white-space: nowrap; flex-shrink: 0; }
 
 .nearby-stack { display: grid; gap: 12px; }
 .nearby-item-card {
