@@ -1,14 +1,14 @@
-// PILK v005 (Mobile-Compact) — Real-Time K-Photo Director & Local Discovery
+// PILK v005 — Minimal 4-Tab Native App Engine
 
 const icons = {
   bookmark: 'M6 4h12v17l-6-4-6 4z',
+  pin: 'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
   scan: 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8h8v8H8z',
   search: 'M20 20l-5-5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
   camera: 'M4 7h4l2-3h4l2 3h4v13H4zM16 13a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
   upload: 'M12 16V4m0 0-4 4m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2',
   spark: 'm12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z',
   volume: 'M11 5 6 9H2v6h4l5 4V5zm4.5 3.5a5 5 0 0 1 0 7m2.8-9.8a9 9 0 0 1 0 12.6',
-  map: 'm3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2zM9 3v16m6-14v16',
   trash: 'M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7'
 };
 
@@ -18,6 +18,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 
 // === State ===
 let lang = 'ko';
+let activeTab = 'camera'; // 'camera' | 'nearby' | 'spots' | 'saved'
 let savedSpots = [];
 let claimedCoupons = [];
 let activeFilter = 'all';
@@ -32,7 +33,7 @@ const director = {
   flip180: true,
   frontFoot: true,
   lens: '1×',
-  distance: 0,
+  distance: 0, // -1 | 0 | 1
   opacity: 72,
   showGrid: true,
   helperOpen: false,
@@ -61,7 +62,7 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2300);
 }
 
 function hydrate(root = document) {
@@ -70,7 +71,30 @@ function hydrate(root = document) {
   root.querySelectorAll('[data-placeholder]').forEach(el => { el.placeholder = t(el.dataset.placeholder); });
 }
 
-// === Clean AR Silhouette SVGs ===
+// === Page Tab Router ===
+const validTabs = ['camera', 'nearby', 'spots', 'saved'];
+function switchTab(tab, pushHash = true) {
+  if (!validTabs.includes(tab)) tab = 'camera';
+  activeTab = tab;
+
+  $$('.tab-page').forEach(p => p.classList.toggle('active', p.dataset.page === tab));
+  $$('.btab, .dtab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  $('.pages-shell').classList.toggle('wide-mode', tab === 'spots');
+
+  if (tab === 'nearby') {
+    $('#nearbyDot').classList.add('hidden');
+    renderNearbyPage();
+  } else if (tab === 'saved') {
+    renderSavedPage();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  if (pushHash && location.hash !== `#${tab}`) {
+    history.replaceState(null, '', `#${tab}`);
+  }
+}
+
+// === AR Silhouette SVG ===
 function recipeSvg(svgType) {
   const stroke = '#ffffff';
   const accent = '#ff8c69';
@@ -137,7 +161,7 @@ function recipeSvg(svgType) {
   </svg>`;
 }
 
-// === Coaching Calculation (Short, Punchy 1-Line Cues) ===
+// === Camera & Coaching ===
 function getActiveSpot() {
   return spots.find(s => s.id === director.spotId) || spots[0];
 }
@@ -153,58 +177,41 @@ function computeCoaching() {
 
   if (r.recommendedFlip && !director.flip180) {
     score -= 22;
-    cue = lang === 'ko' ? '🔄 폰을 180° 거꾸로 뒤집으세요!'
-      : lang === 'ja' ? '🔄 スマホを180°逆さまにして！'
-      : '🔄 Flip your phone 180° upside down!';
+    cue = lang === 'ko' ? '🔄 폰을 180° 거꾸로 뒤집으세요' : lang === 'ja' ? '🔄 スマホを180°逆さまに' : '🔄 Flip phone 180° upside down';
   } else if (r.recommendedLens === '0.5×' && director.lens !== '0.5×') {
     score -= 18;
-    cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요!'
-      : lang === 'ja' ? '📐 0.5×超広角に切り替えて！'
-      : '📐 Switch to 0.5× ultra-wide!';
+    cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요' : lang === 'ja' ? '📐 0.5×超広角に切替' : '📐 Switch to 0.5× ultra-wide';
   } else if (director.distance === -1) {
     score -= 20;
-    cue = lang === 'ko' ? '👣 한 보 뒤로 가세요 (발끝 잘림)'
-      : lang === 'ja' ? '👣 一歩後ろへ下がって！'
-      : '👣 Step back 1 pace (feet cropped)';
+    cue = lang === 'ko' ? '👣 한 보 뒤로 가세요' : lang === 'ja' ? '👣 一歩後ろへ下がって' : '👣 Step back 1 pace';
   } else if (director.distance === 1) {
     score -= 16;
-    cue = lang === 'ko' ? '👣 반 보 앞으로 와서 발끝을 선에 맞추세요'
-      : lang === 'ja' ? '👣 半歩前へ・つま先を下線に！'
-      : '👣 Half step closer to the foot line';
+    cue = lang === 'ko' ? '👣 반 보 앞으로 · 발끝 정렬' : lang === 'ja' ? '👣 半歩前へ・足元合わせ' : '👣 Half step closer to foot line';
   } else if (r.recommendedFrontFoot && !director.frontFoot) {
     score -= 12;
-    cue = lang === 'ko' ? '🦶 앞발을 반 걸음 앞으로 빼보세요!'
-      : lang === 'ja' ? '🦶 前足を半歩前に出して！'
-      : '🦶 Extend your front foot half a step!';
+    cue = lang === 'ko' ? '🦶 앞발을 반 걸음 앞으로 빼세요' : lang === 'ja' ? '🦶 前足を半歩出して' : '🦶 Extend front foot half a step';
   } else if (Math.abs(director.tiltDeg) > 6) {
     score -= 10;
-    cue = lang === 'ko' ? `⚖️ 수평 맞추기 (${director.tiltDeg}°)`
-      : lang === 'ja' ? `⚖️ 水平を合わせて (${director.tiltDeg}°)`
-      : `⚖️ Level phone (${director.tiltDeg}°)`;
+    cue = lang === 'ko' ? `⚖️ 수평 맞추기 (${director.tiltDeg}°)` : lang === 'ja' ? `⚖️ 水平調整 (${director.tiltDeg}°)` : `⚖️ Level phone (${director.tiltDeg}°)`;
   } else {
     if (!r.recommendedFlip && director.flip180) score -= 6;
-    cue = lang === 'ko' ? `✨ 완벽해요! 지금 촬영하세요 · ${rt.chip}`
-      : lang === 'ja' ? `✨ 完璧！今シャッターを！ · ${rt.chip}`
-      : `✨ Perfect angle! Snap now · ${rt.chip}`;
+    cue = lang === 'ko' ? `✨ 완벽해요! 지금 촬영하세요 · ${rt.chip}` : lang === 'ja' ? `✨ 完璧！今シャッターを！ · ${rt.chip}` : `✨ Perfect angle! Snap now · ${rt.chip}`;
   }
-
   return { score: Math.max(48, score), cue };
 }
 
-function updateDirectorView() {
+function updateCameraUI() {
   const spot = getActiveSpot();
   const sText = spot[lang] || spot.ko;
   const r = getActiveRecipe();
   const rt = r[lang] || r.ko;
   const coaching = computeCoaching();
 
-  // Stage background
   const bgImg = $('#stageBgImg');
   bgImg.src = director.customPhotoUrl || `assets/${spot.image}`;
   const lensScale = director.lens === '0.5×' ? 1.0 : director.lens === '2×' ? 1.24 : 1.08;
   bgImg.style.transform = `scale(${lensScale})`;
 
-  // AR Overlay
   const overlay = $('#vfOverlay');
   overlay.innerHTML = recipeSvg(r.svgType);
   const distScale = director.distance === -1 ? 1.18 : director.distance === 1 ? 0.82 : 1.0;
@@ -215,32 +222,27 @@ function updateDirectorView() {
   $('#vfGrid').classList.toggle('hidden', !director.showGrid);
   $('#vfFootLine').classList.toggle('hidden', !director.showGrid);
 
-  // Top HUD
   $('#vfMatchScore').textContent = `${coaching.score}%`;
   $('#vfMatchPill').classList.toggle('warn', coaching.score < 85);
   $('#vfSpotName').textContent = director.customPhotoUrl ? (lang === 'ko' ? '내 사진' : lang === 'ja' ? '自分の写真' : 'My Photo') : sText[0];
-  $('#vfTiltReadout').textContent = `${director.tiltDeg > 0 ? '+' : ''}${director.tiltDeg}°`;
-  $('#vfTiltReadout').style.color = Math.abs(director.tiltDeg) <= 6 ? '#4ade80' : '#fbbf24';
-
-  // Cue line
   $('#vfDirText').textContent = coaching.cue;
 
-  // Mode B 3-pill strip
   const stepStrip = $('#vfModeBStrip');
   stepStrip.classList.toggle('hidden', director.mode !== 'B');
-  stepStrip.innerHTML = rt.steps.map((s, idx) => `<span class="vf-step-pill"><b>${idx + 1}</b>${s}</span>`).join('');
+  stepStrip.innerHTML = rt.steps.map((s, i) => `<span class="vf-step-pill"><b>${i + 1}</b>${s}</span>`).join('');
 
-  // Helper mode
   $('#vfHelperCard').classList.toggle('hidden', !director.helperOpen);
   $('#vfHelperSteps').textContent = rt.helperText;
 
-  // Sync compact controls
-  $$('.seg-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode === director.mode));
-  $$('.lens-btn').forEach(b => b.classList.toggle('selected', b.dataset.lens === director.lens));
+  $$('.mseg').forEach(b => b.classList.toggle('selected', b.dataset.mode === director.mode));
+  $$('.dpose').forEach(b => b.classList.toggle('selected', +b.dataset.poseIdx === director.recipeIdx));
   $('#btnFlip180').classList.toggle('active', director.flip180);
   $('#btnFrontFoot').classList.toggle('active', director.frontFoot);
-  $$('.dist-pill').forEach(b => b.classList.toggle('selected', +b.dataset.dist === director.distance));
-  $$('.pose-pill').forEach(b => b.classList.toggle('selected', +b.dataset.poseIdx === director.recipeIdx));
+  $('#btnLensCycle').textContent = director.lens;
+  $('#btnLensCycle').classList.toggle('active', director.lens === '0.5×');
+  $('#btnDistCycle').textContent = director.distance === -1 ? t('distClose') : director.distance === 1 ? t('distFar') : t('distBest');
+  $('#btnDistCycle').classList.toggle('active', director.distance !== 0);
+
   $('#opacitySlider').value = director.opacity;
   $('#opacityVal').textContent = `${director.opacity}%`;
   $('#gridToggle').checked = director.showGrid;
@@ -249,7 +251,7 @@ function updateDirectorView() {
 function renderPoseStrip() {
   $('#poseStrip').innerHTML = kRecipes.map((r, i) => {
     const rt = r[lang] || r.ko;
-    return `<button type="button" class="pose-pill ${i === director.recipeIdx ? 'selected' : ''}" data-pose-idx="${i}">${r.icon} ${rt.chip}</button>`;
+    return `<button type="button" class="dpose ${i === director.recipeIdx ? 'selected' : ''}" data-pose-idx="${i}">${rt.chip}</button>`;
   }).join('');
 }
 
@@ -267,12 +269,12 @@ function speakCoaching() {
   }
 }
 
-// === Canvas Pixel Analysis & Compact Nearby Carousel ===
+// === Pixel Analysis & Background Scan ===
 function analyzeCanvasPixels() {
   try {
-    const video = $('#stageVideo');
+    const v = $('#stageVideo');
     const img = $('#stageBgImg');
-    const src = director.stream && video.videoWidth ? video : img;
+    const src = director.stream && v.videoWidth ? v : img;
     if (!src || (src === img && (!img.complete || !img.naturalWidth))) return null;
     const c = document.createElement('canvas');
     c.width = 40; c.height = 40;
@@ -292,47 +294,18 @@ function analyzeCanvasPixels() {
 }
 
 function shortLightLabel(stats, spot) {
-  if (!stats) return `${spot.recipe.flip ? '180°' : '기본'} · ${spot.recipe.lens}`;
+  const setup = `${spot.recipe.flip ? '180°' : '기본'} · ${spot.recipe.lens}`;
+  if (!stats) return setup;
   const b = stats.brightness;
-  if (lang === 'ko') return b < 35 ? `야간 ${b}%` : b > 72 ? `밝음 ${b}%` : `자연광 ${b}%`;
-  if (lang === 'ja') return b < 35 ? `夜景 ${b}%` : b > 72 ? `明るい ${b}%` : `自然光 ${b}%`;
-  return b < 35 ? `Low-light ${b}%` : b > 72 ? `Bright ${b}%` : `Daylight ${b}%`;
+  if (lang === 'ko') return `${b < 35 ? '야간' : b > 72 ? '밝은 야외' : '자연광'} (${b}%) · ${setup}`;
+  if (lang === 'ja') return `${b < 35 ? '夜景' : b > 72 ? '明るい' : '自然光'} (${b}%) · ${setup}`;
+  return `${b < 35 ? 'Low-light' : b > 72 ? 'Bright' : 'Daylight'} (${b}%) · ${setup}`;
 }
 
-function renderNearbyCard() {
-  const spot = getActiveSpot();
-  const sText = spot[lang] || spot.ko;
-  const nearby = nearbyPools[spot.pool] || nearbyPools.jongno;
-
-  $('#scanSpotTitle').textContent = sText[0];
-  $('#scanLightTag').textContent = shortLightLabel(director.lastLight, spot);
-
-  $('#nearbyList').innerHTML = nearby.map((item, idx) => {
-    const cid = `${spot.pool}_${idx}`;
-    const claimed = claimedCoupons.includes(cid);
-    return `
-      <article class="nearby-tile">
-        <div class="tile-meta">
-          <span class="tile-cat">${item.cat[lang] || item.cat.ko}</span>
-          <span class="tile-walk">🚶 ${item.walk}</span>
-        </div>
-        <b>${item.name[lang] || item.name.ko}</b>
-        <span class="tile-deal">🎁 ${item.deal[lang] || item.deal.ko}</span>
-        <div class="tile-actions">
-          <button type="button" class="coupon-btn ${claimed ? 'claimed' : ''}" data-claim-coupon="${cid}">
-            ${claimed ? t('couponClaimed') : t('claimCoupon')}
-          </button>
-          ${item.spotId && item.spotId !== spot.id ? `<button type="button" class="switch-mini" data-load-spot="${item.spotId}">${t('switchSpot')}</button>` : ''}
-        </div>
-      </article>
-    `;
-  }).join('');
-}
-
-function runBackgroundScan(applyPreset = false) {
+function runBackgroundScan(openNearbyAfter = true) {
+  if (activeTab !== 'camera') switchTab('camera');
   const laser = $('#vfScanLaser');
   laser.classList.remove('hidden');
-  $('#scanLightTag').textContent = t('scanning');
 
   setTimeout(() => {
     laser.classList.add('hidden');
@@ -344,154 +317,63 @@ function runBackgroundScan(applyPreset = false) {
       else if (warmth > 20) director.spotId = 'gyeongbok';
       else director.spotId = 'seongsu';
     }
-    if (applyPreset) {
-      const spot = getActiveSpot();
-      director.flip180 = spot.recipe.flip;
-      director.lens = spot.recipe.lens;
-      director.recipeIdx = Math.min(kRecipes.length - 1, spot.recipe.pose || 0);
-      director.distance = 0;
-    }
-    updateDirectorView();
-    renderNearbyCard();
-  }, 580);
-}
-
-// === Live WebRTC Camera (Mode switches NEVER stop camera!) ===
-function stopCamera() {
-  director.cameraToken++;
-  if (director.stream) {
-    director.stream.getTracks().forEach(tr => tr.stop());
-    director.stream = null;
-  }
-  const v = $('#stageVideo');
-  if (v) { v.srcObject = null; v.style.display = 'none'; }
-  $('#toggleCamBtn').classList.remove('active');
-  $('#toggleCamLabel').textContent = t('dockCamOn');
-}
-
-async function toggleCamera() {
-  if (director.stream) {
-    stopCamera();
-    return;
-  }
-  const token = ++director.cameraToken;
-  try {
-    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Unavailable');
-    const media = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1600 }, height: { ideal: 1200 } },
-      audio: false
-    });
-    if (token !== director.cameraToken) {
-      media.getTracks().forEach(tr => tr.stop());
-      return;
-    }
-    director.stream = media;
-    const v = $('#stageVideo');
-    v.srcObject = media;
-    await v.play();
-    v.style.display = 'block';
-    $('#toggleCamBtn').classList.add('active');
-    $('#toggleCamLabel').textContent = t('dockCamOff');
-    enableGyro();
-  } catch {
-    if (token === director.cameraToken) toast(t('toastCameraFail'));
-  }
-}
-
-let gyroBound = false;
-function enableGyro() {
-  const bind = () => {
-    if (gyroBound) return;
-    gyroBound = true;
-    window.addEventListener('deviceorientation', e => {
-      if (typeof e.gamma === 'number') {
-        director.tiltDeg = Math.max(-35, Math.min(35, Math.round(e.gamma)));
-        updateDirectorView();
-      }
-    });
-  };
-  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission().then(res => { if (res === 'granted') bind(); }).catch(() => {});
-  } else {
-    bind();
-  }
-}
-
-// === Capture Photo / 1080x1920 IG Story Card ===
-function captureViewfinder(asStory = false) {
-  const v = $('#stageVideo');
-  const img = $('#stageBgImg');
-  const isLive = Boolean(director.stream && v.videoWidth);
-  const src = isLive ? v : img;
-  const sw = isLive ? v.videoWidth : img.naturalWidth;
-  const sh = isLive ? v.videoHeight : img.naturalHeight;
-  if (!sw || !sh) return toast(t('toastCameraFail'));
-
-  try {
-    const c = document.createElement('canvas');
-    const ctx = c.getContext('2d');
-    if (!asStory) {
-      c.width = sw; c.height = sh;
-      ctx.drawImage(src, 0, 0, sw, sh);
-      downloadCanvas(c, `pilk-${Date.now()}.jpg`, 'image/jpeg', 0.93);
-      return toast(t('toastPhotoSaved'));
-    }
-
-    const W = 1080, H = 1920;
-    c.width = W; c.height = H;
-    ctx.fillStyle = '#141714';
-    ctx.fillRect(0, 0, W, H);
-    const pad = 64, topY = 200, pW = W - pad * 2, pH = 1320;
-    const sc = Math.max(pW / sw, pH / sh);
-    ctx.save();
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(pad, topY, pW, pH, 40);
-    else ctx.rect(pad, topY, pW, pH);
-    ctx.clip();
-    ctx.drawImage(src, pad + (pW - sw * sc) / 2, topY + (pH - sh * sc) / 2, sw * sc, sh * sc);
-    ctx.restore();
-
     const spot = getActiveSpot();
-    const sText = spot[lang] || spot.ko;
-    const { score } = computeCoaching();
-    ctx.fillStyle = '#ff5a36';
-    ctx.font = '800 44px "DM Sans", sans-serif';
-    ctx.fillText('✳ PILK', pad, 122);
-    ctx.fillStyle = '#4ade80';
-    ctx.textAlign = 'right';
-    ctx.font = '800 34px "DM Sans", sans-serif';
-    ctx.fillText(`K-MATCH ${score}%`, W - pad, 122);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '800 48px "Noto Sans KR", "DM Sans", sans-serif';
-    ctx.fillText(sText[0], pad, 1625);
-    ctx.fillStyle = 'rgba(255,255,255,0.72)';
-    ctx.font = '500 28px "Noto Sans KR", "DM Sans", sans-serif';
-    ctx.fillText(`${sText[1]} · ${director.flip180 ? '180° Flip' : 'Standard'} · ${director.lens}`, pad, 1682);
-    ctx.fillStyle = '#ff8c69';
-    ctx.font = '700 26px "DM Sans", sans-serif';
-    ctx.fillText(`#PILK  #PictureItLikeKorean  ${sText[3]}`, pad, 1748);
+    director.flip180 = spot.recipe.flip;
+    director.lens = spot.recipe.lens;
+    director.recipeIdx = Math.min(kRecipes.length - 1, spot.recipe.pose || 0);
+    director.distance = 0;
+    updateCameraUI();
+    renderNearbyPage();
 
-    downloadCanvas(c, `pilk-story-${spot.id}.png`, 'image/png', 0.95);
-    toast(t('toastStorySaved'));
-  } catch {
-    toast(t('toastCameraFail'));
-  }
+    if (openNearbyAfter) {
+      toast(t('toastScanned'));
+      switchTab('nearby');
+    } else {
+      $('#nearbyDot').classList.remove('hidden');
+    }
+  }, 560);
 }
 
-function downloadCanvas(canvas, filename, mime, q) {
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL(mime, q);
-  a.download = filename;
-  a.click();
+// === Page 2: Nearby & Coupons ===
+function renderNearbyPage() {
+  const spot = getActiveSpot();
+  const sText = spot[lang] || spot.ko;
+  const nearby = nearbyPools[spot.pool] || nearbyPools.jongno;
+
+  $('#nearbyThumb').src = director.customPhotoUrl || `assets/${spot.image}`;
+  $('#scanSpotTitle').textContent = sText[0];
+  $('#scanLightTag').textContent = shortLightLabel(director.lastLight, spot);
+
+  $('#nearbyList').innerHTML = nearby.map((item, idx) => {
+    const cid = `${spot.pool}_${idx}`;
+    const claimed = claimedCoupons.includes(cid);
+    return `
+      <article class="nearby-item-card">
+        <div class="nearby-meta">
+          <span class="nearby-cat">${item.cat[lang] || item.cat.ko}</span>
+          <span class="nearby-walk">🚶 ${item.walk}</span>
+        </div>
+        <b>${item.name[lang] || item.name.ko}</b>
+        <div class="nearby-deal">🎁 ${item.deal[lang] || item.deal.ko}</div>
+        <div class="nearby-btns">
+          <button type="button" class="btn sm ${claimed ? 'claimed' : 'dark'}" style="flex:1" data-claim-coupon="${cid}">
+            ${claimed ? t('couponClaimed') : t('claimCoupon')}
+          </button>
+          ${item.spotId && item.spotId !== spot.id ? `
+            <button type="button" class="btn sm outline" data-load-spot="${item.spotId}">${t('useScene')}</button>
+          ` : ''}
+        </div>
+      </article>
+    `;
+  }).join('');
 }
 
-// === Spots Grid ===
+// === Page 3: Spots ===
 function spotMatches(s, type) {
   return type === 'all' || s.type === type || (type === 'nature' && s.nature);
 }
 
-function renderSpots() {
+function renderSpotsPage() {
   const preferred = ['seongsu', 'gyeongbok', 'hyundai', 'yeonnam', 'bukchon', 'euljiro', 'jumunjin', 'hannam'];
   const ordered = activeFilter === 'all'
     ? [...preferred.map(id => spots.find(s => s.id === id)).filter(Boolean), ...spots.filter(s => !preferred.includes(s.id))]
@@ -541,23 +423,177 @@ function renderSpots() {
   });
 }
 
-function updateSaveCount() {
-  $('#saveCount').textContent = savedSpots.length + claimedCoupons.length;
+// === Page 4: Saved & Settings ===
+function renderSavedPage() {
+  const container = $('#savedContent');
+  if (!claimedCoupons.length && !savedSpots.length) {
+    container.innerHTML = `<p class="empty-msg">${t('savedEmpty')}</p>`;
+    return;
+  }
+
+  let html = '';
+  if (claimedCoupons.length) {
+    html += `<div class="saved-group"><h3>${t('savedCouponsTitle')} (${claimedCoupons.length})</h3><div class="saved-list">
+      ${claimedCoupons.map(cid => {
+        const [pool, idx] = cid.split('_');
+        const item = nearbyPools[pool]?.[+idx];
+        if (!item) return '';
+        return `<div class="saved-row">
+          <div><b>🎁 ${item.name[lang] || item.name.ko}</b><small>${item.deal[lang] || item.deal.ko}</small></div>
+          <button type="button" class="btn sm outline" data-remove-coupon="${cid}">${icon('trash')}</button>
+        </div>`;
+      }).join('')}
+    </div></div>`;
+  }
+
+  if (savedSpots.length) {
+    html += `<div class="saved-group"><h3>${t('savedSpotsTitle')} (${savedSpots.length})</h3><div class="saved-list">
+      ${savedSpots.map(id => {
+        const s = spots.find(x => x.id === id);
+        if (!s) return '';
+        const a = s[lang] || s.ko;
+        return `<div class="saved-row">
+          <div><b>📍 ${a[0]}</b><small>${a[1]}</small></div>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn sm primary" data-load-spot="${s.id}">${t('openInCamera')}</button>
+            <button type="button" class="btn sm outline" data-save-spot="${s.id}">${icon('trash')}</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div></div>`;
+  }
+
+  container.innerHTML = html;
 }
 
-function renderAll() {
-  document.documentElement.lang = lang;
-  hydrate();
-  ['ko', 'en', 'ja'].forEach(c => {
-    const b = $(`#lang-${c}`);
-    b.classList.toggle('selected', lang === c);
-    b.setAttribute('aria-pressed', String(lang === c));
-  });
-  renderPoseStrip();
-  updateDirectorView();
-  renderNearbyCard();
-  renderSpots();
-  updateSaveCount();
+function updateSaveBadge() {
+  const total = savedSpots.length + claimedCoupons.length;
+  const badge = $('#saveCount');
+  badge.textContent = total;
+  badge.classList.toggle('hidden', total === 0);
+}
+
+// === Live Camera & Capture ===
+function stopCamera() {
+  director.cameraToken++;
+  if (director.stream) {
+    director.stream.getTracks().forEach(tr => tr.stop());
+    director.stream = null;
+  }
+  const v = $('#stageVideo');
+  if (v) { v.srcObject = null; v.style.display = 'none'; }
+  $('#toggleCamBtn').classList.remove('active');
+  $('#toggleCamLabel').textContent = t('dockCamOn');
+}
+
+async function toggleCamera() {
+  if (director.stream) { stopCamera(); return; }
+  const token = ++director.cameraToken;
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Unavailable');
+    const media = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1600 }, height: { ideal: 1200 } },
+      audio: false
+    });
+    if (token !== director.cameraToken) { media.getTracks().forEach(tr => tr.stop()); return; }
+    director.stream = media;
+    const v = $('#stageVideo');
+    v.srcObject = media;
+    await v.play();
+    v.style.display = 'block';
+    $('#toggleCamBtn').classList.add('active');
+    $('#toggleCamLabel').textContent = t('dockCamOff');
+    enableGyro();
+  } catch {
+    if (token === director.cameraToken) toast(t('toastCameraFail'));
+  }
+}
+
+let gyroBound = false;
+function enableGyro() {
+  const bind = () => {
+    if (gyroBound) return;
+    gyroBound = true;
+    window.addEventListener('deviceorientation', e => {
+      if (typeof e.gamma === 'number') {
+        director.tiltDeg = Math.max(-35, Math.min(35, Math.round(e.gamma)));
+        updateCameraUI();
+      }
+    });
+  };
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(res => { if (res === 'granted') bind(); }).catch(() => {});
+  } else {
+    bind();
+  }
+}
+
+function captureViewfinder(asStory = false) {
+  const v = $('#stageVideo');
+  const img = $('#stageBgImg');
+  const isLive = Boolean(director.stream && v.videoWidth);
+  const src = isLive ? v : img;
+  const sw = isLive ? v.videoWidth : img.naturalWidth;
+  const sh = isLive ? v.videoHeight : img.naturalHeight;
+  if (!sw || !sh) return toast(t('toastCameraFail'));
+
+  try {
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+    if (!asStory) {
+      c.width = sw; c.height = sh;
+      ctx.drawImage(src, 0, 0, sw, sh);
+      downloadCanvas(c, `pilk-${Date.now()}.jpg`, 'image/jpeg', 0.93);
+      return toast(t('toastPhotoSaved'));
+    }
+
+    const W = 1080, H = 1920;
+    c.width = W; c.height = H;
+    ctx.fillStyle = '#131513';
+    ctx.fillRect(0, 0, W, H);
+    const pad = 64, topY = 200, pW = W - pad * 2, pH = 1320;
+    const sc = Math.max(pW / sw, pH / sh);
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(pad, topY, pW, pH, 40);
+    else ctx.rect(pad, topY, pW, pH);
+    ctx.clip();
+    ctx.drawImage(src, pad + (pW - sw * sc) / 2, topY + (pH - sh * sc) / 2, sw * sc, sh * sc);
+    ctx.restore();
+
+    const spot = getActiveSpot();
+    const sText = spot[lang] || spot.ko;
+    const { score } = computeCoaching();
+    ctx.fillStyle = '#ff5a36';
+    ctx.font = '800 44px "DM Sans", sans-serif';
+    ctx.fillText('✳ PILK', pad, 122);
+    ctx.fillStyle = '#4ade80';
+    ctx.textAlign = 'right';
+    ctx.font = '800 34px "DM Sans", sans-serif';
+    ctx.fillText(`K-MATCH ${score}%`, W - pad, 122);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 48px "Noto Sans KR", "DM Sans", sans-serif';
+    ctx.fillText(sText[0], pad, 1625);
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.font = '500 28px "Noto Sans KR", "DM Sans", sans-serif';
+    ctx.fillText(`${sText[1]} · ${director.flip180 ? '180° Flip' : 'Standard'} · ${director.lens}`, pad, 1682);
+    ctx.fillStyle = '#ff8c69';
+    ctx.font = '700 26px "DM Sans", sans-serif';
+    ctx.fillText(`#PILK  #PictureItLikeKorean  ${sText[3]}`, pad, 1748);
+
+    downloadCanvas(c, `pilk-story-${spot.id}.png`, 'image/png', 0.95);
+    toast(t('toastStorySaved'));
+  } catch {
+    toast(t('toastCameraFail'));
+  }
+}
+
+function downloadCanvas(canvas, filename, mime, q) {
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL(mime, q);
+  a.download = filename;
+  a.click();
 }
 
 // === Modals ===
@@ -566,10 +602,8 @@ function openModal(html) {
   $('#modalContent').innerHTML = html;
   if (!modal.open) modal.showModal();
   modal.scrollTop = 0;
-  document.body.style.overflow = 'hidden';
 }
 function closeModal() { modal.close(); }
-modal.addEventListener('close', () => { document.body.style.overflow = ''; });
 $('#closeModal').onclick = closeModal;
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
@@ -577,23 +611,12 @@ function showSpotDetail(id) {
   const s = spots.find(x => x.id === id);
   if (!s) return;
   const a = s[lang] || s.ko;
-  const nearby = nearbyPools[s.pool] || nearbyPools.jongno;
   openModal(`
     <img class="modal-hero" src="assets/${s.image}" alt="${a[0]}">
     <div class="modal-body">
       <h2>${a[0]}</h2>
       <small style="color:var(--muted)">${a[1]} · ${a[3]} ${a[4]}</small>
       <div class="modal-tip">${a[5]}</div>
-      <div class="saved-list">
-        ${nearby.map((n, i) => {
-          const cid = `${s.pool}_${i}`;
-          const claimed = claimedCoupons.includes(cid);
-          return `<div class="saved-item">
-            <div><b>${n.name[lang] || n.name.ko}</b><small>🚶 ${n.walk} · ${n.deal[lang] || n.deal.ko}</small></div>
-            <button type="button" class="coupon-btn ${claimed ? 'claimed' : ''}" style="flex:none" data-claim-coupon="${cid}">${claimed ? t('couponClaimed') : t('claimCoupon')}</button>
-          </div>`;
-        }).join('')}
-      </div>
       <div class="modal-actions">
         <button type="button" class="btn primary" data-load-spot="${s.id}" data-close-after="1">${t('openInCamera')}</button>
         <a class="btn outline" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.map)}">${t('openMap')}</a>
@@ -603,51 +626,17 @@ function showSpotDetail(id) {
   `);
 }
 
-function showSavedModal() {
-  const couponsHtml = claimedCoupons.map(cid => {
-    const [pool, idx] = cid.split('_');
-    const item = nearbyPools[pool]?.[+idx];
-    if (!item) return '';
-    return `<div class="saved-item">
-      <div><b>🎁 ${item.name[lang] || item.name.ko}</b><small>${item.deal[lang] || item.deal.ko}</small></div>
-      <button type="button" class="switch-mini" data-remove-coupon="${cid}">${icon('trash')}</button>
-    </div>`;
-  }).join('');
-
-  const spotsHtml = savedSpots.map(id => {
-    const s = spots.find(x => x.id === id);
-    if (!s) return '';
-    const a = s[lang] || s.ko;
-    return `<div class="saved-item">
-      <div><b>📍 ${a[0]}</b><small>${a[1]}</small></div>
-      <div style="display:flex;gap:5px">
-        <button type="button" class="switch-mini" data-load-spot="${s.id}" data-close-after="1">${t('openInCamera')}</button>
-        <button type="button" class="switch-mini" data-save-spot="${s.id}">${icon('trash')}</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  openModal(`
-    <div class="modal-body">
-      <h2>${t('savedTitle')}</h2>
-      ${!claimedCoupons.length && !savedSpots.length ? `<p class="empty-msg">${t('savedEmpty')}</p>` : ''}
-      ${claimedCoupons.length ? `<div class="saved-list">${couponsHtml}</div>` : ''}
-      ${savedSpots.length ? `<div class="saved-list" style="margin-top:12px">${spotsHtml}</div>` : ''}
-    </div>
-  `);
-}
-
 function showStrategyModal() {
   openModal(`
     <div class="modal-body">
       <h2>PILK v005 피벗 전략 요약</h2>
       <table class="strategy-table">
-        <tr><th>한복 한계 돌파</th><td>방한 외국인 90%+의 일상·핫플 촬영으로 확장 (44개 스팟 + 주변 카페/팝업 제휴)</td></tr>
-        <tr><th>배포 전략</th><td>설치 없는 모바일 웹(QR) → IG 스토리 카드 바이럴 → SNS/카메라 플러그인 확장</td></tr>
+        <tr><th>한복 한계 돌파</th><td>방한 외국인 90%+ 일상·핫플 촬영으로 확장 (44개 스팟 + 주변 카페/팝업 제휴)</td></tr>
+        <tr><th>배포 전략</th><td>설치 없는 모바일 웹(QR) → IG 스토리 바이럴 → SNS/카메라 플러그인 확장</td></tr>
         <tr><th>수익 모델</th><td>로컬 제휴 성과 수수료(8~12% / CPA ₩1,500) + 단기 여행 패스($2.99~4.99)</td></tr>
         <tr><th>차별화 핵심</th><td>180° 폰 뒤집기·발끝 정렬·앞발 빼기 실시간 코칭 + 배경 자동 인식 주변 추천</td></tr>
       </table>
-      <p style="font-size:11.5px;color:var(--muted);margin:0">전체 수치·답변: <code>v005/MENTOR_FEEDBACK_AND_STRATEGY.md</code></p>
+      <p style="font-size:11.5px;color:var(--muted);margin:0">전체 보고서: <code>v005/MENTOR_FEEDBACK_AND_STRATEGY.md</code></p>
     </div>
   `);
 }
@@ -664,7 +653,23 @@ function showCreditsModal() {
   `);
 }
 
-// === Events ===
+function renderAll() {
+  document.documentElement.lang = lang;
+  hydrate();
+  ['ko', 'en', 'ja'].forEach(c => {
+    const b = $(`#lang-${c}`);
+    b.classList.toggle('selected', lang === c);
+    b.setAttribute('aria-pressed', String(lang === c));
+  });
+  renderPoseStrip();
+  updateCameraUI();
+  renderNearbyPage();
+  renderSpotsPage();
+  renderSavedPage();
+  updateSaveBadge();
+}
+
+// === Event Bindings ===
 ['ko', 'en', 'ja'].forEach(c => {
   $(`#lang-${c}`).onclick = () => { lang = c; persist('pilk-v5-lang', c); renderAll(); };
 });
@@ -673,30 +678,38 @@ $('#toggleCamBtn').onclick = toggleCamera;
 $('#shutterBtn').onclick = () => captureViewfinder(false);
 $('#exportStoryBtn').onclick = () => captureViewfinder(true);
 $('#speakCueBtn').onclick = speakCoaching;
-$('#runScanBtn').onclick = () => runBackgroundScan(true);
-$('#mobileScanBtn').onclick = () => { $('#director').scrollIntoView({ behavior: 'smooth' }); runBackgroundScan(true); };
-$('#vfSpotPill').onclick = () => $('#discover').scrollIntoView({ behavior: 'smooth' });
-$('#helperModeBtn').onclick = () => { director.helperOpen = !director.helperOpen; updateDirectorView(); };
-$('#closeHelperBtn').onclick = () => { director.helperOpen = false; updateDirectorView(); };
-$('#toggleSettingsBtn').onclick = () => $('#settingsDrawer').classList.toggle('hidden');
+$('#vfScanBtn').onclick = () => runBackgroundScan(true);
+$('#rescanBtn').onclick = () => runBackgroundScan(true);
+$('#helperModeBtn').onclick = () => { director.helperOpen = !director.helperOpen; updateCameraUI(); };
+$('#closeHelperBtn').onclick = () => { director.helperOpen = false; updateCameraUI(); };
 
-$$('.seg-btn').forEach(b => {
+$$('.mseg').forEach(b => {
   b.onclick = () => {
     director.mode = b.dataset.mode;
-    updateDirectorView();
+    updateCameraUI();
     if (director.mode === 'C') speakCoaching();
   };
 });
-$$('.lens-btn').forEach(b => {
-  b.onclick = () => { director.lens = b.dataset.lens; updateDirectorView(); };
-});
-$('#btnFlip180').onclick = () => { director.flip180 = !director.flip180; updateDirectorView(); };
-$('#btnFrontFoot').onclick = () => { director.frontFoot = !director.frontFoot; updateDirectorView(); };
-$$('.dist-pill').forEach(b => {
-  b.onclick = () => { director.distance = +b.dataset.dist; updateDirectorView(); };
-});
-$('#opacitySlider').oninput = e => { director.opacity = +e.target.value; updateDirectorView(); };
-$('#gridToggle').onchange = e => { director.showGrid = e.target.checked; updateDirectorView(); };
+
+$('#btnFlip180').onclick = () => { director.flip180 = !director.flip180; updateCameraUI(); };
+$('#btnFrontFoot').onclick = () => { director.frontFoot = !director.frontFoot; updateCameraUI(); };
+
+const lensList = ['0.5×', '1×', '2×'];
+$('#btnLensCycle').onclick = () => {
+  const next = lensList[(lensList.indexOf(director.lens) + 1) % lensList.length];
+  director.lens = next;
+  updateCameraUI();
+};
+
+const distList = [-1, 0, 1];
+$('#btnDistCycle').onclick = () => {
+  const next = distList[(distList.indexOf(director.distance) + 1) % distList.length];
+  director.distance = next;
+  updateCameraUI();
+};
+
+$('#opacitySlider').oninput = e => { director.opacity = +e.target.value; updateCameraUI(); };
+$('#gridToggle').onchange = e => { director.showGrid = e.target.checked; updateCameraUI(); };
 
 $('#uploadSceneInput').onchange = e => {
   const file = e.target.files?.[0];
@@ -705,21 +718,24 @@ $('#uploadSceneInput').onchange = e => {
   director.customPhotoUrl = URL.createObjectURL(file);
   stopCamera();
   const img = $('#stageBgImg');
-  img.onload = () => runBackgroundScan(true);
+  img.onload = () => runBackgroundScan(false);
   img.src = director.customPhotoUrl;
   e.target.value = '';
 };
 
-$('#searchInput').oninput = e => { searchQuery = e.target.value; spotLimit = 8; renderSpots(); };
-$('#loadMoreBtn').onclick = () => { spotLimit += 8; renderSpots(); };
-$('#openSaved').onclick = showSavedModal;
-$('#mobileSavedBtn').onclick = showSavedModal;
+$('#searchInput').oninput = e => { searchQuery = e.target.value; spotLimit = 8; renderSpotsPage(); };
+$('#loadMoreBtn').onclick = () => { spotLimit += 8; renderSpotsPage(); };
 $('#openStrategyModalBtn').onclick = showStrategyModal;
 $('#openCreditsBtn').onclick = showCreditsModal;
 
 document.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
+
+  if (b.dataset.tab) {
+    switchTab(b.dataset.tab);
+    return;
+  }
 
   if (b.dataset.poseIdx !== undefined) {
     director.recipeIdx = +b.dataset.poseIdx;
@@ -728,7 +744,7 @@ document.addEventListener('click', e => {
     director.lens = r.recommendedLens;
     director.frontFoot = r.recommendedFrontFoot;
     director.distance = 0;
-    updateDirectorView();
+    updateCameraUI();
     if (director.mode === 'C') speakCoaching();
     return;
   }
@@ -736,7 +752,7 @@ document.addEventListener('click', e => {
   if (b.dataset.filter) {
     activeFilter = b.dataset.filter;
     spotLimit = 8;
-    renderSpots();
+    renderSpotsPage();
     return;
   }
 
@@ -744,9 +760,15 @@ document.addEventListener('click', e => {
     director.customPhotoUrl = null;
     director.spotId = b.dataset.loadSpot;
     if (b.dataset.closeAfter && modal.open) closeModal();
-    $('#director').scrollIntoView({ behavior: 'smooth' });
-    runBackgroundScan(true);
-    toast(t('toastSpotLoaded'));
+    const spot = getActiveSpot();
+    director.flip180 = spot.recipe.flip;
+    director.lens = spot.recipe.lens;
+    director.recipeIdx = Math.min(kRecipes.length - 1, spot.recipe.pose || 0);
+    director.distance = 0;
+    updateCameraUI();
+    renderNearbyPage();
+    switchTab('camera');
+    $('#nearbyDot').classList.remove('hidden');
     return;
   }
 
@@ -765,9 +787,9 @@ document.addEventListener('click', e => {
       toast(t('toastAdded'));
     }
     persist('pilk-v5-saved', savedSpots);
-    renderSpots();
-    updateSaveCount();
-    if (modal.open) showSavedModal();
+    renderSpotsPage();
+    renderSavedPage();
+    updateSaveBadge();
     return;
   }
 
@@ -777,9 +799,9 @@ document.addEventListener('click', e => {
       claimedCoupons.push(cid);
       persist('pilk-v5-coupons', claimedCoupons);
       toast(t('toastCoupon'));
-      renderNearbyCard();
-      updateSaveCount();
-      if (modal.open) { b.classList.add('claimed'); b.textContent = t('couponClaimed'); }
+      renderNearbyPage();
+      renderSavedPage();
+      updateSaveBadge();
     }
     return;
   }
@@ -787,21 +809,28 @@ document.addEventListener('click', e => {
   if (b.dataset.removeCoupon) {
     claimedCoupons = claimedCoupons.filter(x => x !== b.dataset.removeCoupon);
     persist('pilk-v5-coupons', claimedCoupons);
-    renderNearbyCard();
-    updateSaveCount();
-    showSavedModal();
+    renderNearbyPage();
+    renderSavedPage();
+    updateSaveBadge();
   }
+});
+
+window.addEventListener('hashchange', () => {
+  const h = location.hash.slice(1);
+  if (validTabs.includes(h) && h !== activeTab) switchTab(h, false);
 });
 
 // Boot
 renderAll();
+const initialHash = location.hash.slice(1);
+switchTab(validTabs.includes(initialHash) ? initialHash : 'camera', false);
 const initImg = $('#stageBgImg');
 if (initImg.complete) {
   director.lastLight = analyzeCanvasPixels();
-  renderNearbyCard();
+  renderNearbyPage();
 } else {
   initImg.addEventListener('load', () => {
     director.lastLight = analyzeCanvasPixels();
-    renderNearbyCard();
+    renderNearbyPage();
   }, { once: true });
 }

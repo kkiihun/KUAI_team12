@@ -3,40 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#141714">
-  <meta name="description" content="PILK — Picture It Like Korean. 실시간 한국식 AR 포토 코칭 & 배경 인식 주변 핫플 추천.">
+  <meta name="theme-color" content="#f7f6f2">
+  <meta name="description" content="PILK — Picture It Like Korean. 실시간 한국식 포토 코칭 & 주변 추천.">
   <title>PILK — Picture It Like Korean</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
 <header class="app-bar">
-  <a href="#director" class="brand" aria-label="PILK">
+  <button type="button" class="brand" data-tab="camera" aria-label="PILK">
     <span class="brand-mark">✳</span>
     <span class="brand-name">PILK</span>
-    <span class="brand-tag" data-t="tagline"></span>
-  </a>
-  <div class="bar-right">
-    <div class="lang-pill" role="group" aria-label="Language">
-      <button type="button" id="lang-ko" class="selected" aria-pressed="true">KR</button>
-      <button type="button" id="lang-en" aria-pressed="false">EN</button>
-      <button type="button" id="lang-ja" aria-pressed="false">JP</button>
-    </div>
-    <button type="button" class="icon-badge-btn" id="openSaved" aria-label="Saved">
-      <span data-icon="bookmark"></span>
-      <span class="count-dot" id="saveCount">0</span>
-    </button>
+  </button>
+
+  <!-- Desktop top tab bar (hidden on mobile where bottom tab bar is used) -->
+  <nav class="desktop-tabs" aria-label="Pages">
+    <button type="button" class="dtab active" data-tab="camera" data-t="tabCam"></button>
+    <button type="button" class="dtab" data-tab="nearby" data-t="tabNearby"></button>
+    <button type="button" class="dtab" data-tab="spots" data-t="tabSpots"></button>
+    <button type="button" class="dtab" data-tab="saved" data-t="tabSaved"></button>
+  </nav>
+
+  <div class="lang-pill" role="group" aria-label="Language">
+    <button type="button" id="lang-ko" class="selected" aria-pressed="true">KR</button>
+    <button type="button" id="lang-en" aria-pressed="false">EN</button>
+    <button type="button" id="lang-ja" aria-pressed="false">JP</button>
   </div>
 </header>
 
-<main class="app-main">
-  <!-- CAMERA-FIRST WORKSPACE -->
-  <section class="studio-wrap" id="director">
-    <!-- LEFT / TOP: VIEWFINDER + ATTACHED SHUTTER BAR -->
-    <div class="camera-shell">
+<main class="pages-shell">
+
+  <!-- ==================== PAGE 1: CAMERA (DEFAULT, ZERO-SCROLL) ==================== -->
+  <section class="tab-page active" id="page-camera" data-page="camera">
+    <div class="camera-card">
       <div class="viewfinder" id="viewfinderStage">
         <img id="stageBgImg" src="assets/places/seongsu.jpg" alt="Scene">
         <video id="stageVideo" autoplay playsinline muted></video>
@@ -49,21 +51,22 @@
         <!-- Minimal Top Overlay -->
         <div class="vf-top">
           <div class="vf-top-left">
-            <span class="match-pill" id="vfMatchPill"><strong id="vfMatchScore">96%</strong></span>
-            <button type="button" class="spot-pill" id="vfSpotPill">📍 <span id="vfSpotName">성수 연무장길</span></button>
+            <span class="match-pill" id="vfMatchPill"><strong id="vfMatchScore">100%</strong></span>
+            <button type="button" class="spot-pill" data-tab="spots">📍 <span id="vfSpotName">성수 연무장길</span></button>
           </div>
           <div class="vf-top-right">
-            <span class="tilt-pill" id="vfTiltReadout">0°</span>
-            <button type="button" class="glass-icon-btn" id="helperModeBtn" aria-label="10s Helper Card">👥</button>
-            <button type="button" class="glass-icon-btn" id="toggleSettingsBtn" aria-label="Settings">⚙️</button>
+            <button type="button" class="scan-pill-btn" id="vfScanBtn">
+              <span data-icon="scan"></span><span data-t="scanAction"></span>
+            </button>
+            <button type="button" class="glass-btn" id="helperModeBtn" aria-label="10s Helper Card">👥</button>
           </div>
         </div>
 
-        <!-- Mode B: Ultra-short 3-pill strip (visible only in Mode B) -->
+        <!-- Mode B: 3 tiny pills -->
         <div class="vf-steps hidden" id="vfModeBStrip"></div>
 
-        <!-- Single-Line Live Coaching Cue -->
-        <div class="vf-cue" id="vfDirectiveBar">
+        <!-- Single-Line Live Cue -->
+        <div class="vf-cue">
           <p id="vfDirText"></p>
         </div>
 
@@ -76,96 +79,74 @@
         </div>
       </div>
 
-      <!-- Native-style Shutter Bar -->
+      <!-- Integrated Pose Strip (dark sleek bar) -->
+      <div class="dark-pose-strip" id="poseStrip"></div>
+
+      <!-- Integrated Shutter Bar -->
       <div class="shutter-bar">
-        <label class="shutter-side-btn" for="uploadSceneInput">
+        <label class="shutter-btn-side" for="uploadSceneInput">
           <span data-icon="upload"></span><small data-t="dockPhoto"></small>
         </label>
         <input type="file" id="uploadSceneInput" accept="image/jpeg,image/png,image/webp" class="sr-only">
 
-        <button type="button" class="shutter-side-btn" id="toggleCamBtn">
+        <button type="button" class="shutter-btn-side" id="toggleCamBtn">
           <span data-icon="camera"></span><small id="toggleCamLabel" data-t="dockCamOn"></small>
         </button>
 
-        <button type="button" class="shutter-circle" id="shutterBtn" aria-label="Snap Photo"><span></span></button>
+        <button type="button" class="shutter-circle" id="shutterBtn" aria-label="Capture"><span></span></button>
 
-        <button type="button" class="shutter-side-btn" id="exportStoryBtn">
+        <button type="button" class="shutter-btn-side" id="exportStoryBtn">
           <span data-icon="spark"></span><small data-t="dockStory"></small>
         </button>
 
-        <button type="button" class="shutter-side-btn" id="speakCueBtn">
+        <button type="button" class="shutter-btn-side" id="speakCueBtn">
           <span data-icon="volume"></span><small data-t="dockVoice"></small>
         </button>
       </div>
     </div>
 
-    <!-- RIGHT / BELOW: COMPACT PILLS + AI NEARBY CAROUSEL -->
-    <div class="controls-col">
-      <!-- Compact Control Strip -->
-      <div class="compact-card">
-        <!-- Row 1: Mode Segmented + Quick Toggles -->
-        <div class="seg-row">
-          <div class="seg-group" role="tablist">
-            <button type="button" class="seg-btn selected" data-mode="A" data-t="modeA"></button>
-            <button type="button" class="seg-btn" data-mode="B" data-t="modeB"></button>
-            <button type="button" class="seg-btn" data-mode="C" data-t="modeC"></button>
-          </div>
-          <div class="lens-seg" role="group" aria-label="Lens">
-            <button type="button" class="lens-btn" data-lens="0.5×">0.5×</button>
-            <button type="button" class="lens-btn selected" data-lens="1×">1×</button>
-            <button type="button" class="lens-btn" data-lens="2×">2×</button>
-          </div>
-        </div>
-
-        <!-- Row 2: Swipeable Korean Framing Switches (Flip / Front Foot / Distance) -->
-        <div class="pill-scroll">
-          <button type="button" class="ctrl-pill active" id="btnFlip180">🔄 <span data-t="flipBtn"></span></button>
-          <button type="button" class="ctrl-pill active" id="btnFrontFoot">🦶 <span data-t="footBtn"></span></button>
-          <span class="pill-divider" aria-hidden="true"></span>
-          <button type="button" class="dist-pill" data-dist="-1" data-t="distClose"></button>
-          <button type="button" class="dist-pill selected" data-dist="0" data-t="distBest"></button>
-          <button type="button" class="dist-pill" data-dist="1" data-t="distFar"></button>
-        </div>
-
-        <!-- Row 3: Swipeable 6 K-Pose Chips -->
-        <div class="pill-scroll pose-strip" id="poseStrip"></div>
-
-        <!-- Collapsible Settings (Hidden by default) -->
-        <div class="settings-drawer hidden" id="settingsDrawer">
-          <label class="drawer-range">
-            <span data-t="opacityLabel"></span>
-            <input type="range" id="opacitySlider" min="15" max="100" value="72">
-            <b id="opacityVal">72%</b>
-          </label>
-          <label class="drawer-check">
-            <input type="checkbox" id="gridToggle" checked>
-            <span data-t="gridLabel"></span>
-          </label>
-        </div>
+    <!-- ONE Single Minimal Utility Bar Below Camera -->
+    <div class="quick-bar">
+      <div class="mini-seg" role="tablist">
+        <button type="button" class="mseg selected" data-mode="A" data-t="modeA"></button>
+        <button type="button" class="mseg" data-mode="B" data-t="modeB"></button>
+        <button type="button" class="mseg" data-mode="C" data-t="modeC"></button>
       </div>
-
-      <!-- Compact AI Scene Scan & Horizontal Nearby Partner Carousel -->
-      <div class="compact-card nearby-card" id="scanCard">
-        <div class="nearby-head">
-          <div class="nearby-title-wrap">
-            <span class="ai-dot"></span>
-            <strong id="scanSpotTitle">성수 연무장길</strong>
-            <span class="light-tag" id="scanLightTag"></span>
-          </div>
-          <button type="button" class="scan-mini-btn" id="runScanBtn">
-            <span data-icon="scan"></span><span data-t="scanBtn"></span>
-          </button>
-        </div>
-        <div class="nearby-carousel" id="nearbyList"></div>
+      <div class="quick-toggles">
+        <button type="button" class="qchip active" id="btnFlip180"><span data-t="flipShort"></span></button>
+        <button type="button" class="qchip active" id="btnFrontFoot"><span data-t="footShort"></span></button>
+        <button type="button" class="qchip" id="btnLensCycle">1×</button>
+        <button type="button" class="qchip" id="btnDistCycle">최적</button>
       </div>
     </div>
   </section>
 
-  <!-- 44 SPOTS CLEAN PHOTO GRID -->
-  <section class="spots-section" id="discover">
-    <div class="spots-top-row">
-      <h2 data-t="spotsTitle"></h2>
-      <label class="search-mini">
+  <!-- ==================== PAGE 2: NEARBY & LOCAL COUPONS ==================== -->
+  <section class="tab-page" id="page-nearby" data-page="nearby">
+    <div class="page-head">
+      <h1 data-t="nearbyHeading"></h1>
+      <button type="button" class="btn primary sm" id="rescanBtn">
+        <span data-icon="scan"></span><span data-t="rescanBtn"></span>
+      </button>
+    </div>
+
+    <div class="current-spot-banner">
+      <img id="nearbyThumb" src="assets/places/seongsu.jpg" alt="">
+      <div class="banner-text">
+        <b id="scanSpotTitle">성수 연무장길</b>
+        <small id="scanLightTag">자연광 · 180° · 1×</small>
+      </div>
+      <span class="ai-pill">AI</span>
+    </div>
+
+    <div class="nearby-stack" id="nearbyList"></div>
+  </section>
+
+  <!-- ==================== PAGE 3: 44 KOREA SPOTS ==================== -->
+  <section class="tab-page" id="page-spots" data-page="spots">
+    <div class="page-head">
+      <h1 data-t="spotsHeading"></h1>
+      <label class="search-pill">
         <span data-icon="search"></span>
         <input id="searchInput" type="search" data-placeholder="searchPlaceholder">
       </label>
@@ -185,21 +166,59 @@
     </div>
     <p class="empty-msg hidden" id="emptySearch" data-t="emptySearch"></p>
   </section>
+
+  <!-- ==================== PAGE 4: SAVED & SETTINGS ==================== -->
+  <section class="tab-page" id="page-saved" data-page="saved">
+    <div class="page-head">
+      <h1 data-t="savedHeading"></h1>
+    </div>
+
+    <div id="savedContent"></div>
+
+    <div class="settings-card">
+      <h3 data-t="settingsTitle"></h3>
+      <label class="setting-row">
+        <span data-t="opacityLabel"></span>
+        <div class="range-wrap">
+          <input type="range" id="opacitySlider" min="15" max="100" value="72">
+          <b id="opacityVal">72%</b>
+        </div>
+      </label>
+      <label class="setting-row">
+        <span data-t="gridLabel"></span>
+        <input type="checkbox" id="gridToggle" checked>
+      </label>
+    </div>
+
+    <div class="settings-card">
+      <h3 data-t="infoTitle"></h3>
+      <button type="button" class="info-link-row" id="openStrategyModalBtn">
+        <span data-t="footerStrategy"></span><span>↗</span>
+      </button>
+      <button type="button" class="info-link-row" id="openCreditsBtn">
+        <span data-t="footerCredits"></span><span>↗</span>
+      </button>
+    </div>
+  </section>
+
 </main>
 
-<footer class="mini-footer">
-  <span>✳ PILK v005</span>
-  <div class="footer-btns">
-    <button type="button" id="openStrategyModalBtn" data-t="footerStrategy"></button>
-    <button type="button" id="openCreditsBtn" data-t="footerCredits"></button>
-  </div>
-</footer>
-
-<nav class="mobile-nav" aria-label="Bottom Navigation">
-  <a href="#director" class="active"><span data-icon="camera"></span><span data-t="navCam"></span></a>
-  <button type="button" id="mobileScanBtn"><span data-icon="scan"></span><span data-t="navScan"></span></button>
-  <a href="#discover"><span data-icon="search"></span><span data-t="navSpots"></span></a>
-  <button type="button" id="mobileSavedBtn"><span data-icon="bookmark"></span><span data-t="navSaved"></span></button>
+<!-- FIXED BOTTOM TAB BAR (MOBILE) -->
+<nav class="bottom-tabs" aria-label="App Navigation">
+  <button type="button" class="btab active" data-tab="camera">
+    <span data-icon="camera"></span><span data-t="tabCam"></span>
+  </button>
+  <button type="button" class="btab" data-tab="nearby">
+    <span class="tab-icon-wrap"><span data-icon="pin"></span><i class="notif-dot hidden" id="nearbyDot"></i></span>
+    <span data-t="tabNearby"></span>
+  </button>
+  <button type="button" class="btab" data-tab="spots">
+    <span data-icon="search"></span><span data-t="tabSpots"></span>
+  </button>
+  <button type="button" class="btab" data-tab="saved">
+    <span class="tab-icon-wrap"><span data-icon="bookmark"></span><b class="tab-badge hidden" id="saveCount">0</b></span>
+    <span data-t="tabSaved"></span>
+  </button>
 </nav>
 
 <dialog id="modal">
@@ -209,8 +228,8 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="spots-data.js?v=3"></script>
-<script src="pilk-data.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="spots-data.js?v=4"></script>
+<script src="pilk-data.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
