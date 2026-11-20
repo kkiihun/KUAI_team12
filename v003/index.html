@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf9f5">
+  <meta name="description" content="PILK (Picture It Like Korean) — 한국인이 SNS에 올린 베스트 컷 데이터를 학습해, 특정 장소에서 한국인처럼 감각적인 인생샷을 찍을 수 있도록 폰 뒤집기·앵글·포즈를 실시간 코칭해 주는 서비스.">
+  <title>PILK (Picture It Like Korean) — 한국인처럼 감각적인 인생샷 실시간 코칭</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+  <a href="#" class="brand" aria-label="PILK home">
+    <span class="brand-flower">✳</span> PILK<span class="brand-colon">:</span><span class="brand-sub">frame</span><span class="brand-dot">v003</span>
+  </a>
+  <nav class="desktop-nav">
+    <a href="#discover" class="active" data-t="navDiscover"></a>
+    <a href="#coaching" data-t="navCoaching"></a>
+    <a href="#poses" data-t="navPoses"></a>
+    <a href="#hanbok" data-t="navHanbok"></a>
+    <a href="#challenge" data-t="navChallenge"></a>
+    <a href="#survey" class="nav-highlight" data-t="navSurvey"></a>
+  </nav>
+  <div class="header-right">
+    <div class="language" aria-label="Language">
+      <button id="ko" class="selected" aria-pressed="true">KR</button>
+      <button id="en" aria-pressed="false">EN</button>
+      <button id="ja" aria-pressed="false">JP</button>
+    </div>
+    <button class="saved-nav" id="openSaved">
+      <span data-icon="bookmark"></span>
+      <span data-t="myFrames"></span>
+      <span id="saveCount">0</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="tiny-spark">✦</span> PICTURE IT LIKE KOREAN · AI SNS BEST-SHOT COACHING</div>
+      <h1 data-t="heroTitle"></h1>
+      <p class="hero-desc" data-t="heroDesc"></p>
+      <div class="pilk-diff-badge" data-t="pilkCorePitch"></div>
+      <div class="hero-actions">
+        <button class="button primary" data-action="camera"><span data-icon="scan"></span><span data-t="tryAr"></span></button>
+        <a class="button outline" href="#survey"><span data-icon="check"></span><span data-t="openSurveyCta"></span></a>
+        <a class="text-button" href="#discover"><span data-t="findFrame"></span><span data-icon="arrow"></span></a>
+      </div>
+      <div class="hero-note">
+        <div class="note-doodle">♡</div>
+        <span data-t="heroNote"></span>
+        <span class="hand-arrow">⤴</span>
+      </div>
+      <div class="hero-bottom">
+        <span>KOREAN SNS BEST-CUT DATA</span>
+        <span>PHONE-FLIP · 0.5× ANGLE · LIVE VOICE COACH</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="photo-shell">
+        <img class="hero-photo" src="assets/hero.jpg" alt="경복궁에서 한국 감성 인생샷 코칭을 받는 여행자">
+        <div class="photo-top">
+          <span class="live-pill"><span></span> PILK LIVE COACH · 98% MATCH</span>
+          <button class="round-button white" data-save="gyeongbok" aria-label="경복궁 저장"><span data-icon="bookmark"></span></button>
+        </div>
+        <div class="hud-chip hud-top-left">🔄 <span data-t="hudFlip"></span></div>
+        <div class="hud-chip hud-bottom-right">📐 <span data-t="hudAngle"></span></div>
+        <span class="view-corner tl"></span><span class="view-corner tr"></span><span class="view-corner bl"></span><span class="view-corner br"></span>
+        <div class="photo-bottom">
+          <span><span data-icon="pin"></span> <b data-t="gyeongbok"></b></span>
+          <span>SNS BEST #01</span>
+        </div>
+      </div>
+      <div class="floating-sticker">
+        <span data-t="heroSticker"></span>
+        <b>Picture It<br>Like Korean.</b>
+        <span class="sticker-star">✦</span>
+      </div>
+      <button class="ar-float" data-action="camera">
+        <span class="ar-icon" data-icon="scan"></span>
+        <span><b data-t="arFloatTitle"></b><small data-t="arFloatDesc"></small></span>
+        <span data-icon="arrow"></span>
+      </button>
+      <span class="hero-flower">✳</span>
+    </div>
+  </section>
+
+  <div class="journey-strip">
+    <span><i>01</i><b data-t="step1"></b></span>
+    <span class="strip-arrow">⟶</span>
+    <span><i>02</i><b data-t="step2"></b></span>
+    <span class="strip-arrow">⟶</span>
+    <span><i>03</i><b data-t="step3"></b></span>
+    <span class="strip-note">Picture It Like Korean — Flip, Align, Snap.</span>
+  </div>
+
+  <!-- 3 COACHING MODES SECTION (Part 4 A / B / C) -->
+  <section class="section coaching-section" id="coaching">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow muted">3 REAL-TIME COACHING MODES · A / B / C</div>
+        <h2 data-t="coachingTitle"></h2>
+        <p data-t="coachingDesc"></p>
+      </div>
+      <button class="button primary" data-action="camera"><span data-icon="camera"></span><span data-t="tryCoachingNow"></span></button>
+    </div>
+    <div class="coaching-grid" id="coachingModesGrid"></div>
+  </section>
+
+  <!-- DISCOVER SPOTS -->
+  <section class="discover section" id="discover">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow muted">KOREAN SNS BEST-CUT SPOTS</div>
+        <h2 data-t="discoverTitle"></h2>
+        <p data-t="discoverDesc"></p>
+      </div>
+      <button class="subtle-button" id="viewAll"><span data-t="viewAll"></span><span data-icon="arrow"></span></button>
+    </div>
+    <div class="filter-bar">
+      <div class="filters">
+        <button class="chip selected" data-filter="all"><span>✦</span><span data-t="filterAll"></span></button>
+        <button class="chip" data-filter="local"><span data-icon="spark"></span><span data-t="filterLocal"></span></button>
+        <button class="chip" data-filter="drama"><span data-icon="film"></span><span data-t="filterDrama"></span></button>
+        <button class="chip" data-filter="heritage"><span data-icon="palace"></span><span data-t="filterHeritage"></span></button>
+        <button class="chip" data-filter="nature"><span data-icon="sun"></span><span data-t="filterNature"></span></button>
+      </div>
+      <label class="search">
+        <span data-icon="search"></span>
+        <input id="searchInput" type="search" data-placeholder="searchPlaceholder">
+        <span class="search-key">⌕</span>
+      </label>
+    </div>
+    <div class="local-intro hidden" id="localIntro">
+      <span data-t="localIntro"></span>
+      <button id="localCriteria" data-t="localCriteria"></button>
+    </div>
+    <p class="catalog-count" id="catalogCount" aria-live="polite"></p>
+    <div class="spot-grid" id="spotGrid"></div>
+    <div class="catalog-more"><button class="button outline load-more" id="loadMoreSpots"></button></div>
+    <div class="empty hidden" id="emptySearch" data-t="emptySearch"></div>
+  </section>
+
+  <!-- POSES & K-ANGLES -->
+  <section class="section poses-section" id="poses">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow muted">K-ANGLE & POSE RECIPES</div>
+        <h2 data-t="posesTitle"></h2>
+        <p data-t="posesDesc"></p>
+      </div>
+      <span class="editor-label">PILK SNS DATA PICK ↙</span>
+    </div>
+    <div class="pose-grid" id="poseGrid"></div>
+  </section>
+
+  <!-- HANBOK & COLOR MATCH STUDIO -->
+  <section class="hanbok-section" id="hanbok">
+    <div class="hanbok-copy">
+      <div class="eyebrow">SPOT COLOR & HANBOK MATCH</div>
+      <h2 data-t="hanbokTitle"></h2>
+      <p data-t="hanbokDesc"></p>
+      <div class="tone-options" id="toneOptions"></div>
+      <button class="button dark" id="openStyling"><span data-t="styleHanbok"></span><span data-icon="arrow"></span></button>
+      <button class="quiz-link" id="openQuiz"><span data-t="colorHelp"></span> ↗</button>
+    </div>
+    <div class="hanbok-art">
+      <span class="handwritten">made for your moment.</span>
+      <div class="outfit-frame">
+        <span class="outfit-label">MY HANBOK PALETTE</span>
+        <div id="homeHanbok"></div>
+        <div class="palette-dots" id="paletteDots"></div>
+        <span class="outfit-caption" id="outfitCaption"></span>
+      </div>
+      <div class="color-tag">
+        <span>COLOR NOTE</span>
+        <b id="colorName"></b>
+        <small data-t="colorNote"></small>
+      </div>
+      <span class="outfit-spark">✧</span>
+    </div>
+  </section>
+
+  <!-- PHOTO CHALLENGE & LOCAL REWARDS -->
+  <section class="section challenge-section" id="challenge">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow muted">PHOTO CHALLENGE & LOCAL REWARDS</div>
+        <h2 data-t="challengeTitle"></h2>
+        <p data-t="challengeDesc"></p>
+      </div>
+    </div>
+    <div class="challenge-grid" id="challengeGrid"></div>
+  </section>
+
+  <!-- CUSTOMER VALIDATION SURVEY & GOOGLE FORMS COPY CENTER -->
+  <section class="section survey-section" id="survey">
+    <div class="survey-banner">
+      <div class="survey-head">
+        <div>
+          <div class="eyebrow"><span class="tiny-spark">✦</span> CUSTOMER VALIDATION SURVEY · KR / EN / JP</div>
+          <h2 data-t="surveySectionTitle"></h2>
+          <p data-t="surveySectionDesc"></p>
+        </div>
+        <div class="survey-tab-group">
+          <button class="button primary" id="tabInteractiveSurvey" data-survey-tab="interactive" data-t="tabInteractiveBtn"></button>
+          <button class="button outline" id="tabGformsCopy" data-survey-tab="gforms" data-t="tabGformsBtn"></button>
+        </div>
+      </div>
+
+      <!-- Interactive Survey View -->
+      <div id="interactiveSurveyContainer" class="survey-card-shell"></div>
+
+      <!-- Google Forms Ready-to-Copy View -->
+      <div id="gformsCopyContainer" class="survey-card-shell hidden"></div>
+    </div>
+  </section>
+
+  <section class="closing-banner">
+    <span class="closing-star">✳</span>
+    <div>
+      <h3 data-t="closingTitle"></h3>
+      <p data-t="closingDesc"></p>
+    </div>
+    <button class="button light" data-action="camera">
+      <span data-icon="camera"></span>
+      <span data-t="openCamera"></span>
+      <span data-icon="arrow"></span>
+    </button>
+  </section>
+</main>
+
+<footer>
+  <a class="brand" href="#">PILK<span class="brand-colon">:</span><span class="brand-sub">frame</span><span class="brand-dot">v003</span></a>
+  <span data-t="footerLine"></span>
+  <button id="credits" data-t="credits"></button>
+  <span>© 2026 PILK (Picture It Like Korean)</span>
+</footer>
+
+<nav class="mobile-nav">
+  <a href="#discover"><span data-icon="search"></span><span data-t="navDiscover"></span></a>
+  <a href="#coaching"><span data-icon="spark"></span><span data-t="navCoachingShort"></span></a>
+  <button data-action="camera"><span data-icon="scan"></span>COACH</button>
+  <a href="#survey"><span data-icon="check"></span><span data-t="navSurveyShort"></span></a>
+  <button data-action="saved"><span data-icon="bookmark"></span><span data-t="savedShort"></span></button>
+</nav>
+
+<dialog id="modal">
+  <button class="modal-close round-button" id="closeModal" aria-label="닫기 / Close / 閉じる"><span data-icon="close"></span></button>
+  <div id="modalContent"></div>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script src="spots-extra.js"></script>
+<script src="studio-data.js"></script>
+<script src="pilk-survey-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
