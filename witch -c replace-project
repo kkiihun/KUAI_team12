@@ -1,0 +1,217 @@
+ .DS_Store                                          |  Bin [31m6148[m -> [32m0[m bytes
+ .gitignore                                         |    6 [31m-[m
+ README.md                                          |  163 [31m--[m
+ ...7\205\343\203\225\343\202\251\343\203\210.html" |  992 [31m--------[m
+ v002/.DS_Store                                     |  Bin [31m6148[m -> [32m0[m bytes
+ v002/app.js                                        |  118 [31m-[m
+ v002/assets/beach.jpg                              |  Bin [31m57807[m -> [32m0[m bytes
+ v002/assets/bukchon.jpg                            |  Bin [31m99021[m -> [32m0[m bytes
+ v002/assets/hero.jpg                               |  Bin [31m221390[m -> [32m0[m bytes
+ v002/assets/palace.jpg                             |  Bin [31m93773[m -> [32m0[m bytes
+ v002/assets/places/anmok.jpg                       |  Bin [31m144373[m -> [32m0[m bytes
+ v002/assets/places/boseong.jpg                     |  Bin [31m100824[m -> [32m0[m bytes
+ v002/assets/places/changdeok.jpg                   |  Bin [31m223002[m -> [32m0[m bytes
+ v002/assets/places/changgyeong.jpg                 |  Bin [31m179432[m -> [32m0[m bytes
+ v002/assets/places/dadaepo.jpg                     |  Bin [31m199904[m -> [32m0[m bytes
+ v002/assets/places/deoksu.jpg                      |  Bin [31m125360[m -> [32m0[m bytes
+ v002/assets/places/euljiro.jpg                     |  Bin [31m244510[m -> [32m0[m bytes
+ v002/assets/places/eunpyeong.jpg                   |  Bin [31m270444[m -> [32m0[m bytes
+ v002/assets/places/gongjin.jpg                     |  Bin [31m75112[m -> [32m0[m bytes
+ v002/assets/places/gwangalli.jpg                   |  Bin [31m185441[m -> [32m0[m bytes
+ v002/assets/places/gyeonghui.jpg                   |  Bin [31m114740[m -> [32m0[m bytes
+ v002/assets/places/gyochon.jpg                     |  Bin [31m170416[m -> [32m0[m bytes
+ v002/assets/places/haebangchon.jpg                 |  Bin [31m296252[m -> [32m0[m bytes
+ v002/assets/places/haenggung.jpg                   |  Bin [31m156577[m -> [32m0[m bytes
+ v002/assets/places/hanbyeok.jpg                    |  Bin [31m72846[m -> [32m0[m bytes
+ v002/assets/places/haneul.jpg                      |  Bin [31m134128[m -> [32m0[m bytes
+ v002/assets/places/hanmi.jpg                       |  Bin [31m91377[m -> [32m0[m bytes
+ v002/assets/places/hannam.jpg                      |  Bin [31m107052[m -> [32m0[m bytes
+ v002/assets/places/hyeopjae.jpg                    |  Bin [31m140639[m -> [32m0[m bytes
+ v002/assets/places/hyundai.jpg                     |  Bin [31m125173[m -> [32m0[m bytes
+ v002/assets/places/jeonjuhanok.jpg                 |  Bin [31m69459[m -> [32m0[m bytes
+ v002/assets/places/mangwon.jpg                     |  Bin [31m265040[m -> [32m0[m bytes
+ v002/assets/places/mongted.jpg                     |  Bin [31m146717[m -> [32m0[m bytes
+ v002/assets/places/mungyeong.jpg                   |  Bin [31m172990[m -> [32m0[m bytes
+ v002/assets/places/nami.jpg                        |  Bin [31m262341[m -> [32m0[m bytes
+ v002/assets/places/namsangol.jpg                   |  Bin [31m221740[m -> [32m0[m bytes
+ v002/assets/places/noksapyeong.jpg                 |  Bin [31m144508[m -> [32m0[m bytes
+ v002/assets/places/nseoul.jpg                      |  Bin [31m111590[m -> [32m0[m bytes
+ v002/assets/places/olympic.jpg                     |  Bin [31m107845[m -> [32m0[m bytes
+ v002/assets/places/seochon.jpg                     |  Bin [31m152578[m -> [32m0[m bytes
+ v002/assets/places/seongsu.jpg                     |  Bin [31m298331[m -> [32m0[m bytes
+ v002/assets/places/seonyudo.jpg                    |  Bin [31m132992[m -> [32m0[m bytes
+ v002/assets/places/seoulforest.jpg                 |  Bin [31m119956[m -> [32m0[m bytes
+ v002/assets/places/songridan.jpg                   |  Bin [31m355487[m -> [32m0[m bytes
+ v002/assets/places/suncheon.jpg                    |  Bin [31m161763[m -> [32m0[m bytes
+ v002/assets/places/sunshine.jpg                    |  Bin [31m111923[m -> [32m0[m bytes
+ v002/assets/places/ttukseom.jpg                    |  Bin [31m241499[m -> [32m0[m bytes
+ v002/assets/places/unhyeon.jpg                     |  Bin [31m107464[m -> [32m0[m bytes
+ v002/assets/places/yeonnam.jpg                     |  Bin [31m213477[m -> [32m0[m bytes
+ v002/assets/places/yeouido.jpg                     |  Bin [31m80766[m -> [32m0[m bytes
+ v002/assets/scene.jpg                              |  Bin [31m277511[m -> [32m0[m bytes
+ v002/index.html                                    |   19 [31m-[m
+ v002/seoul-frame-share.zip                         |  Bin [31m7367524[m -> [32m0[m bytes
+ v002/spots-extra.js                                | 1042 [31m--------[m
+ v002/studio-data.js                                |    8 [31m-[m
+ v002/style.css                                     |   18 [31m-[m
+ v003/PILK_Google_Forms_Survey.md                   |  289 [31m---[m
+ v003/PROJECT_ANALYSIS_AND_V003.md                  |   40 [31m-[m
+ v003/app.js                                        |  905 [31m-------[m
+ v003/assets/beach.jpg                              |  Bin [31m57807[m -> [32m0[m bytes
+ v003/assets/bukchon.jpg                            |  Bin [31m99021[m -> [32m0[m bytes
+ v003/assets/hero.jpg                               |  Bin [31m221390[m -> [32m0[m bytes
+ v003/assets/palace.jpg                             |  Bin [31m93773[m -> [32m0[m bytes
+ v003/assets/places/anmok.jpg                       |  Bin [31m144373[m -> [32m0[m bytes
+ v003/assets/places/boseong.jpg                     |  Bin [31m100824[m -> [32m0[m bytes
+ v003/assets/places/changdeok.jpg                   |  Bin [31m223002[m -> [32m0[m bytes
+ v003/assets/places/changgyeong.jpg                 |  Bin [31m179432[m -> [32m0[m bytes
+ v003/assets/places/dadaepo.jpg                     |  Bin [31m199904[m -> [32m0[m bytes
+ v003/assets/places/deoksu.jpg                      |  Bin [31m125360[m -> [32m0[m bytes
+ v003/assets/places/euljiro.jpg                     |  Bin [31m244510[m -> [32m0[m bytes
+ v003/assets/places/eunpyeong.jpg                   |  Bin [31m270444[m -> [32m0[m bytes
+ v003/assets/places/gongjin.jpg                     |  Bin [31m75112[m -> [32m0[m bytes
+ v003/assets/places/gwangalli.jpg                   |  Bin [31m185441[m -> [32m0[m bytes
+ v003/assets/places/gyeonghui.jpg                   |  Bin [31m114740[m -> [32m0[m bytes
+ v003/assets/places/gyochon.jpg                     |  Bin [31m170416[m -> [32m0[m bytes
+ v003/assets/places/haebangchon.jpg                 |  Bin [31m296252[m -> [32m0[m bytes
+ v003/assets/places/haenggung.jpg                   |  Bin [31m156577[m -> [32m0[m bytes
+ v003/assets/places/hanbyeok.jpg                    |  Bin [31m72846[m -> [32m0[m bytes
+ v003/assets/places/haneul.jpg                      |  Bin [31m134128[m -> [32m0[m bytes
+ v003/assets/places/hanmi.jpg                       |  Bin [31m91377[m -> [32m0[m bytes
+ v003/assets/places/hannam.jpg                      |  Bin [31m107052[m -> [32m0[m bytes
+ v003/assets/places/hyeopjae.jpg                    |  Bin [31m140639[m -> [32m0[m bytes
+ v003/assets/places/hyundai.jpg                     |  Bin [31m125173[m -> [32m0[m bytes
+ v003/assets/places/jeonjuhanok.jpg                 |  Bin [31m69459[m -> [32m0[m bytes
+ v003/assets/places/mangwon.jpg                     |  Bin [31m265040[m -> [32m0[m bytes
+ v003/assets/places/mongted.jpg                     |  Bin [31m146717[m -> [32m0[m bytes
+ v003/assets/places/mungyeong.jpg                   |  Bin [31m172990[m -> [32m0[m bytes
+ v003/assets/places/nami.jpg                        |  Bin [31m262341[m -> [32m0[m bytes
+ v003/assets/places/namsangol.jpg                   |  Bin [31m221740[m -> [32m0[m bytes
+ v003/assets/places/noksapyeong.jpg                 |  Bin [31m144508[m -> [32m0[m bytes
+ v003/assets/places/nseoul.jpg                      |  Bin [31m111590[m -> [32m0[m bytes
+ v003/assets/places/olympic.jpg                     |  Bin [31m107845[m -> [32m0[m bytes
+ v003/assets/places/seochon.jpg                     |  Bin [31m152578[m -> [32m0[m bytes
+ v003/assets/places/seongsu.jpg                     |  Bin [31m298331[m -> [32m0[m bytes
+ v003/assets/places/seonyudo.jpg                    |  Bin [31m132992[m -> [32m0[m bytes
+ v003/assets/places/seoulforest.jpg                 |  Bin [31m119956[m -> [32m0[m bytes
+ v003/assets/places/songridan.jpg                   |  Bin [31m355487[m -> [32m0[m bytes
+ v003/assets/places/suncheon.jpg                    |  Bin [31m161763[m -> [32m0[m bytes
+ v003/assets/places/sunshine.jpg                    |  Bin [31m111923[m -> [32m0[m bytes
+ v003/assets/places/ttukseom.jpg                    |  Bin [31m241499[m -> [32m0[m bytes
+ v003/assets/places/unhyeon.jpg                     |  Bin [31m107464[m -> [32m0[m bytes
+ v003/assets/places/yeonnam.jpg                     |  Bin [31m213477[m -> [32m0[m bytes
+ v003/assets/places/yeouido.jpg                     |  Bin [31m80766[m -> [32m0[m bytes
+ v003/assets/scene.jpg                              |  Bin [31m277511[m -> [32m0[m bytes
+ v003/index.html                                    |  263 [31m--[m
+ v003/pilk-survey-data.js                           |  596 [31m-----[m
+ v003/spots-extra.js                                | 1042 [31m--------[m
+ v003/studio-data.js                                |    8 [31m-[m
+ v003/style.css                                     |  102 [31m-[m
+ v004/app.js                                        |  138 [31m--[m
+ v004/assets/beach.jpg                              |  Bin [31m57807[m -> [32m0[m bytes
+ v004/assets/bukchon.jpg                            |  Bin [31m99021[m -> [32m0[m bytes
+ v004/assets/hero.jpg                               |  Bin [31m221390[m -> [32m0[m bytes
+ v004/assets/palace.jpg                             |  Bin [31m93773[m -> [32m0[m bytes
+ v004/assets/places/anmok.jpg                       |  Bin [31m144373[m -> [32m0[m bytes
+ v004/assets/places/boseong.jpg                     |  Bin [31m100824[m -> [32m0[m bytes
+ v004/assets/places/changdeok.jpg                   |  Bin [31m223002[m -> [32m0[m bytes
+ v004/assets/places/changgyeong.jpg                 |  Bin [31m179432[m -> [32m0[m bytes
+ v004/assets/places/dadaepo.jpg                     |  Bin [31m199904[m -> [32m0[m bytes
+ v004/assets/places/deoksu.jpg                      |  Bin [31m125360[m -> [32m0[m bytes
+ v004/assets/places/euljiro.jpg                     |  Bin [31m244510[m -> [32m0[m bytes
+ v004/assets/places/eunpyeong.jpg                   |  Bin [31m270444[m -> [32m0[m bytes
+ v004/assets/places/gongjin.jpg                     |  Bin [31m75112[m -> [32m0[m bytes
+ v004/assets/places/gwangalli.jpg                   |  Bin [31m185441[m -> [32m0[m bytes
+ v004/assets/places/gyeonghui.jpg                   |  Bin [31m114740[m -> [32m0[m bytes
+ v004/assets/places/gyochon.jpg                     |  Bin [31m170416[m -> [32m0[m bytes
+ v004/assets/places/haebangchon.jpg                 |  Bin [31m296252[m -> [32m0[m bytes
+ v004/assets/places/haenggung.jpg                   |  Bin [31m156577[m -> [32m0[m bytes
+ v004/assets/places/hanbyeok.jpg                    |  Bin [31m72846[m -> [32m0[m bytes
+ v004/assets/places/haneul.jpg                      |  Bin [31m134128[m -> [32m0[m bytes
+ v004/assets/places/hanmi.jpg                       |  Bin [31m91377[m -> [32m0[m bytes
+ v004/assets/places/hannam.jpg                      |  Bin [31m107052[m -> [32m0[m bytes
+ v004/assets/places/hyeopjae.jpg                    |  Bin [31m140639[m -> [32m0[m bytes
+ v004/assets/places/hyundai.jpg                     |  Bin [31m125173[m -> [32m0[m bytes
+ v004/assets/places/jeonjuhanok.jpg                 |  Bin [31m69459[m -> [32m0[m bytes
+ v004/assets/places/mangwon.jpg                     |  Bin [31m265040[m -> [32m0[m bytes
+ v004/assets/places/mongted.jpg                     |  Bin [31m146717[m -> [32m0[m bytes
+ v004/assets/places/mungyeong.jpg                   |  Bin [31m172990[m -> [32m0[m bytes
+ v004/assets/places/nami.jpg                        |  Bin [31m262341[m -> [32m0[m bytes
+ v004/assets/places/namsangol.jpg                   |  Bin [31m221740[m -> [32m0[m bytes
+ v004/assets/places/noksapyeong.jpg                 |  Bin [31m144508[m -> [32m0[m bytes
+ v004/assets/places/nseoul.jpg                      |  Bin [31m111590[m -> [32m0[m bytes
+ v004/assets/places/olympic.jpg                     |  Bin [31m107845[m -> [32m0[m bytes
+ v004/assets/places/seochon.jpg                     |  Bin [31m152578[m -> [32m0[m bytes
+ v004/assets/places/seongsu.jpg                     |  Bin [31m298331[m -> [32m0[m bytes
+ v004/assets/places/seonyudo.jpg                    |  Bin [31m132992[m -> [32m0[m bytes
+ v004/assets/places/seoulforest.jpg                 |  Bin [31m119956[m -> [32m0[m bytes
+ v004/assets/places/songridan.jpg                   |  Bin [31m355487[m -> [32m0[m bytes
+ v004/assets/places/suncheon.jpg                    |  Bin [31m161763[m -> [32m0[m bytes
+ v004/assets/places/sunshine.jpg                    |  Bin [31m111923[m -> [32m0[m bytes
+ v004/assets/places/ttukseom.jpg                    |  Bin [31m241499[m -> [32m0[m bytes
+ v004/assets/places/unhyeon.jpg                     |  Bin [31m107464[m -> [32m0[m bytes
+ v004/assets/places/yeonnam.jpg                     |  Bin [31m213477[m -> [32m0[m bytes
+ v004/assets/places/yeouido.jpg                     |  Bin [31m80766[m -> [32m0[m bytes
+ v004/assets/scene.jpg                              |  Bin [31m277511[m -> [32m0[m bytes
+ v004/index.html                                    |  196 [31m--[m
+ v004/spots-extra.js                                | 1042 [31m--------[m
+ v004/studio-data.js                                |    8 [31m-[m
+ v004/style.css                                     |   26 [31m-[m
+ v004/survey.html                                   |  430 [31m----[m
+ v004/survey.md                                     |  156 [31m--[m
+ v005/.env.example                                  |    4 [31m-[m
+ v005/MENTOR_FEEDBACK_AND_STRATEGY.md               |   85 [31m-[m
+ v005/api/chat.js                                   |  125 [31m-[m
+ v005/app.js                                        | 1142 [31m---------[m
+ v005/assets/beach.jpg                              |  Bin [31m57807[m -> [32m0[m bytes
+ v005/assets/bukchon.jpg                            |  Bin [31m99021[m -> [32m0[m bytes
+ v005/assets/hero.jpg                               |  Bin [31m221390[m -> [32m0[m bytes
+ v005/assets/palace.jpg                             |  Bin [31m93773[m -> [32m0[m bytes
+ v005/assets/places/anmok.jpg                       |  Bin [31m144373[m -> [32m0[m bytes
+ v005/assets/places/boseong.jpg                     |  Bin [31m100824[m -> [32m0[m bytes
+ v005/assets/places/changdeok.jpg                   |  Bin [31m223002[m -> [32m0[m bytes
+ v005/assets/places/changgyeong.jpg                 |  Bin [31m179432[m -> [32m0[m bytes
+ v005/assets/places/dadaepo.jpg                     |  Bin [31m199904[m -> [32m0[m bytes
+ v005/assets/places/deoksu.jpg                      |  Bin [31m125360[m -> [32m0[m bytes
+ v005/assets/places/euljiro.jpg                     |  Bin [31m244510[m -> [32m0[m bytes
+ v005/assets/places/eunpyeong.jpg                   |  Bin [31m270444[m -> [32m0[m bytes
+ v005/assets/places/gongjin.jpg                     |  Bin [31m75112[m -> [32m0[m bytes
+ v005/assets/places/gwangalli.jpg                   |  Bin [31m185441[m -> [32m0[m bytes
+ v005/assets/places/gyeonghui.jpg                   |  Bin [31m114740[m -> [32m0[m bytes
+ v005/assets/places/gyochon.jpg                     |  Bin [31m170416[m -> [32m0[m bytes
+ v005/assets/places/haebangchon.jpg                 |  Bin [31m296252[m -> [32m0[m bytes
+ v005/assets/places/haenggung.jpg                   |  Bin [31m156577[m -> [32m0[m bytes
+ v005/assets/places/hanbyeok.jpg                    |  Bin [31m72846[m -> [32m0[m bytes
+ v005/assets/places/haneul.jpg                      |  Bin [31m134128[m -> [32m0[m bytes
+ v005/assets/places/hanmi.jpg                       |  Bin [31m91377[m -> [32m0[m bytes
+ v005/assets/places/hannam.jpg                      |  Bin [31m107052[m -> [32m0[m bytes
+ v005/assets/places/hyeopjae.jpg                    |  Bin [31m140639[m -> [32m0[m bytes
+ v005/assets/places/hyundai.jpg                     |  Bin [31m125173[m -> [32m0[m bytes
+ v005/assets/places/jeonjuhanok.jpg                 |  Bin [31m69459[m -> [32m0[m bytes
+ v005/assets/places/mangwon.jpg                     |  Bin [31m265040[m -> [32m0[m bytes
+ v005/assets/places/mongted.jpg                     |  Bin [31m146717[m -> [32m0[m bytes
+ v005/assets/places/mungyeong.jpg                   |  Bin [31m172990[m -> [32m0[m bytes
+ v005/assets/places/nami.jpg                        |  Bin [31m262341[m -> [32m0[m bytes
+ v005/assets/places/namsangol.jpg                   |  Bin [31m221740[m -> [32m0[m bytes
+ v005/assets/places/noksapyeong.jpg                 |  Bin [31m144508[m -> [32m0[m bytes
+ v005/assets/places/nseoul.jpg                      |  Bin [31m111590[m -> [32m0[m bytes
+ v005/assets/places/olympic.jpg                     |  Bin [31m107845[m -> [32m0[m bytes
+ v005/assets/places/seochon.jpg                     |  Bin [31m152578[m -> [32m0[m bytes
+ v005/assets/places/seongsu.jpg                     |  Bin [31m298331[m -> [32m0[m bytes
+ v005/assets/places/seonyudo.jpg                    |  Bin [31m132992[m -> [32m0[m bytes
+ v005/assets/places/seoulforest.jpg                 |  Bin [31m119956[m -> [32m0[m bytes
+ v005/assets/places/songridan.jpg                   |  Bin [31m355487[m -> [32m0[m bytes
+ v005/assets/places/suncheon.jpg                    |  Bin [31m161763[m -> [32m0[m bytes
+ v005/assets/places/sunshine.jpg                    |  Bin [31m111923[m -> [32m0[m bytes
+ v005/assets/places/ttukseom.jpg                    |  Bin [31m241499[m -> [32m0[m bytes
+ v005/assets/places/unhyeon.jpg                     |  Bin [31m107464[m -> [32m0[m bytes
+ v005/assets/places/yeonnam.jpg                     |  Bin [31m213477[m -> [32m0[m bytes
+ v005/assets/places/yeouido.jpg                     |  Bin [31m80766[m -> [32m0[m bytes
+ v005/assets/scene.jpg                              |  Bin [31m277511[m -> [32m0[m bytes
+ v005/index.html                                    |  283 [31m---[m
+ v005/pilk-data.js                                  |  412 [31m----[m
+ v005/server.mjs                                    |  105 [31m-[m
+ v005/spots-data.js                                 | 2503 [31m--------------------[m
+ v005/style.css                                     |  591 [31m-----[m
+ v005/survey.html                                   |  341 [31m---[m
+ 216 files changed, 13198 deletions(-)
