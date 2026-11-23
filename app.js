@@ -1,7 +1,7 @@
 // PILK v005 — Minimal 4-Tab Native App Engine
 
 const icons = {
-  bookmark: 'M6 4h12v17l-6-4-6 4z',
+  bookmark: 'M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.6-1.7 4.8-9.2 9.4-9.2 9.4z',
   pin: 'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
   scan: 'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8h8v8H8z',
   search: 'M20 20l-5-5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
@@ -9,10 +9,15 @@ const icons = {
   upload: 'M12 16V4m0 0-4 4m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2',
   spark: 'm12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z',
   volume: 'M11 5 6 9H2v6h4l5 4V5zm4.5 3.5a5 5 0 0 1 0 7m2.8-9.8a9 9 0 0 1 0 12.6',
-  flipcam: 'M20 7h-3l-2-2H9L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM9 13a3 3 0 0 1 5.2-2l1.3 1.3M15 13a3 3 0 0 1-5.2 2l-1.3-1.3',
-  trash: 'M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7'
+  flipcam: 'M4 12a8 8 0 0 1 13.7-5.6L20 8.7M20 4v4.7h-4.7M20 12a8 8 0 0 1-13.7 5.6L4 15.3M4 20v-4.7h4.7',
+  helper: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18.5 14.2A6.5 6.5 0 0 1 21.5 20',
+  trash: 'M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7',
+  eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
+  eyeoff: 'M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 3.9M6.6 6.6C3.9 8.3 2 12 2 12s3.6 7 10 7c1.9 0 3.5-.6 4.9-1.4M9.9 9.9a3 3 0 0 0 4.2 4.2'
 };
 
+const brandLogo = new Image();
+brandLogo.src = 'assets/brand/pilk-logo.png';
 const icon = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${icons[name] || icons.spark}"/></svg>`;
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -38,6 +43,8 @@ const director = {
   distance: 0, // -1 | 0 | 1
   opacity: 72,
   showGrid: true,
+  showGuide: true,
+  skipIntro: false,
   helperOpen: false,
   tiltDeg: 0,
   facingMode: 'environment', // 'environment' (rear) | 'user' (front selfie)
@@ -49,8 +56,14 @@ const director = {
 try {
   const storedLang = localStorage.getItem('pilk-v5-lang');
   if (storedLang && copy[storedLang]) lang = storedLang;
+  else {
+    const pref = (navigator.languages || [navigator.language || '']).map(l => String(l).slice(0, 2).toLowerCase());
+    lang = pref.find(l => copy[l]) || 'en';
+  }
   savedSpots = JSON.parse(localStorage.getItem('pilk-v5-saved') || '[]').filter(id => spots.some(s => s.id === id));
   claimedCoupons = JSON.parse(localStorage.getItem('pilk-v5-coupons') || '[]');
+  director.showGuide = localStorage.getItem('pilk-v5-guide') !== '0';
+  director.skipIntro = localStorage.getItem('pilk-v5-skip-intro') === '1';
 } catch {}
 
 function persist(k, v) {
@@ -106,11 +119,15 @@ function switchTab(tab, pushHash = true) {
 function getActiveSpot() {
   return spots.find(s => s.id === director.spotId) || spots[0];
 }
+const poseImage = r => r.image || 'assets/poses/' + r.svgType + '.webp?v=14';
 function getActiveRecipe() {
   return kRecipes[director.recipeIdx] || kRecipes[0];
 }
 
 function computeCoaching() {
+  // Live camera + reference skeleton: the real pose-match score replaces the settings-based estimate.
+  const live = director.stream && poseTracking.match();
+  if (live) return live;
   const r = getActiveRecipe();
   const rt = r[lang] || r.ko;
   let score = 100;
@@ -121,22 +138,22 @@ function computeCoaching() {
     cue = rt.shortCue;
   } else if (r.recommendedLens === '0.5×' && director.lens !== '0.5×') {
     score -= 18;
-    cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요' : lang === 'ja' ? '📐 0.5×超広角に切替' : '📐 Switch to 0.5× ultra-wide';
+    cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요' : lang === 'ja' ? '📐 0.5倍の超広角に切り替えてね' : '📐 Switch to 0.5× ultra-wide';
   } else if (director.distance === -1) {
     score -= 20;
-    cue = lang === 'ko' ? '👣 한 보 뒤로 가세요' : lang === 'ja' ? '👣 一歩後ろへ下がって' : '👣 Step back 1 pace';
+    cue = lang === 'ko' ? '👣 한 보 뒤로 가세요' : lang === 'ja' ? '👣 撮る人は一歩うしろへ' : '👣 Step back 1 pace';
   } else if (director.distance === 1) {
     score -= 16;
-    cue = lang === 'ko' ? '👣 반 보 앞으로 · 발끝 정렬' : lang === 'ja' ? '👣 半歩前へ・足元合わせ' : '👣 Half step closer to foot line';
+    cue = lang === 'ko' ? '👣 반 보 앞으로 · 발끝 정렬' : lang === 'ja' ? '👣 半歩前へ・足元をラインに合わせて' : '👣 Half step closer to foot line';
   } else if (r.recommendedFrontFoot && !director.frontFoot) {
     score -= 12;
-    cue = lang === 'ko' ? '🦶 앞발을 반 걸음 앞으로 빼세요' : lang === 'ja' ? '🦶 前足を半歩出して' : '🦶 Extend front foot half a step';
+    cue = lang === 'ko' ? '🦶 앞발을 반 걸음 앞으로 빼세요' : lang === 'ja' ? '🦶 前足を半歩出すと脚長に見えます' : '🦶 Extend front foot half a step';
   } else if (Math.abs(director.tiltDeg) > 6) {
     score -= 10;
-    cue = lang === 'ko' ? `⚖️ 수평 맞추기 (${director.tiltDeg}°)` : lang === 'ja' ? `⚖️ 水平調整 (${director.tiltDeg}°)` : `⚖️ Level phone (${director.tiltDeg}°)`;
+    cue = lang === 'ko' ? `⚖️ 수평 맞추기 (${director.tiltDeg}°)` : lang === 'ja' ? `⚖️ スマホをまっすぐに (${director.tiltDeg}°)` : `⚖️ Level phone (${director.tiltDeg}°)`;
   } else {
     if (!r.recommendedFlip && director.flip180) score -= 6;
-    cue = lang === 'ko' ? `✨ 완벽해요! 지금 촬영하세요 · ${rt.chip}` : lang === 'ja' ? `✨ 完璧！今シャッターを！ · ${rt.chip}` : `✨ Perfect angle! Snap now · ${rt.chip}`;
+    cue = lang === 'ko' ? `✨ 완벽해요! 지금 촬영하세요 · ${rt.chip}` : lang === 'ja' ? `✨ バッチリ！今がシャッターチャンス · ${rt.chip}` : `✨ Perfect angle! Snap now · ${rt.chip}`;
   }
   return { score: Math.max(48, score), cue };
 }
@@ -148,13 +165,13 @@ function updateCameraUI() {
   const rt = r[lang] || r.ko;
   const coaching = computeCoaching();
 
-  $('#guidePhoto').src = 'assets/poses/'+r.svgType+'.webp?v=14';
+  $('#guidePhoto').src = poseImage(r);
   $('#guideTitle').textContent = rt.chip;
   $('#guideSteps').replaceChildren(...rt.steps.map(step => Object.assign(document.createElement('li'), {textContent: step})));
   const bgImg = $('#stageBgImg');
   const fullBody = r.svgType === 'flip';
   const poseExample = director.posePreview && !director.customPhotoUrl && !director.stream;
-  const source = poseExample ? 'assets/poses/'+r.svgType+'.webp?v=14' : director.customPhotoUrl || `assets/${spot.image}`;
+  const source = poseExample ? poseImage(r) : director.customPhotoUrl || `assets/${spot.image}`;
   $('#viewfinderStage').classList.toggle('pose-example', poseExample);
   $('#viewfinderStage').style.setProperty('--pose-photo', poseExample ? 'url("'+source+'")' : 'none');
   if (bgImg.getAttribute('src') !== source) bgImg.src = source;
@@ -162,19 +179,33 @@ function updateCameraUI() {
   bgImg.style.transform = poseExample ? 'none' : `scale(${lensScale})`;
 
   const overlay = $('#vfOverlay');
-  overlay.innerHTML = (director.stream || poseExample || fullBody || r.svgType === 'high05') ? '' : recipeSvg(r.svgType);
+  const overlayKey = (director.stream || poseExample || fullBody || r.people === 2 || r.svgType === 'high05') ? '' : r.svgType;
+  if (overlay.dataset.key !== overlayKey) { overlay.dataset.key = overlayKey; overlay.innerHTML = overlayKey ? recipeSvg(overlayKey) : ''; }
   const distScale = director.distance === -1 ? 1.18 : director.distance === 1 ? 0.82 : 1.0;
   const distY = director.distance === -1 ? '6%' : director.distance === 1 ? '-6%' : '0%';
   overlay.style.transform = `scale(${distScale}) translateY(${distY})`;
+  overlay.hidden = !director.showGuide;
+  const guideBtn = $('#guideToggleBtn');
+  guideBtn.innerHTML = icon(director.showGuide ? 'eye' : 'eyeoff');
+  guideBtn.setAttribute('aria-pressed', String(director.showGuide));
+  guideBtn.setAttribute('aria-label', t(director.showGuide ? 'guideOn' : 'guideOff'));
+  guideBtn.classList.toggle('is-off', !director.showGuide);
+  $('#skeletonToggle').checked = director.showGuide;
+  $('#skipIntroToggle').checked = director.skipIntro;
   overlay.style.opacity = director.mode === 'B' ? Math.max(0.22, director.opacity / 220) : director.opacity / 100;
 
   $('#vfGrid').classList.toggle('hidden', poseExample || !director.showGrid);
-  $('#vfFootLine').classList.toggle('hidden', poseExample || !director.showGrid || ['cheek','shadow','high05'].includes(r.svgType));
+  $('#vfFootLine').classList.toggle('hidden', poseExample || !director.showGrid || ['cheek','shadow','high05','pair_heart','pair_back'].includes(r.svgType));
 
   $('#vfMatchScore').textContent = poseExample ? ({ko:'구도 예시',en:'Example',ja:'構図例'})[lang] : poseTracking.status() || `${coaching.score}%`;
   $('#vfMatchPill').classList.toggle('warn', coaching.score < 85);
   $('#vfSpotName').textContent = poseExample ? (fullBody ? (spots.find(s => s.id === 'gyeongbok')[lang][0]) : t('tabNearby')) : director.customPhotoUrl ? (lang === 'ko' ? '내 사진' : lang === 'ja' ? '自分の写真' : 'My Photo') : sText[0];
-  $('#vfDirText').textContent = poseExample || fullBody || ['shadow','high05'].includes(r.svgType) ? rt.shortCue : coaching.cue;
+  const vibe = $('#vfVibe');
+  vibe.hidden = poseExample;
+  vibe.style.setProperty('--vibe', coaching.score + '%');
+  $('#vfVibeValue').textContent = coaching.score + '%';
+  const liveMatch = director.stream && poseTracking.match();
+  $('#vfDirText').textContent = liveMatch ? liveMatch.cue : poseExample || fullBody || r.people === 2 || ['shadow','high05'].includes(r.svgType) ? rt.shortCue : coaching.cue;
 
   const stepStrip = $('#vfModeBStrip');
   stepStrip.classList.toggle('hidden', director.mode !== 'B');
@@ -198,9 +229,13 @@ function updateCameraUI() {
 }
 
 function renderPoseStrip() {
-  $('#poseStrip').innerHTML = kRecipes.map((r, i) => {
+  const people = getActiveRecipe().people === 2 ? 2 : 1;
+  const toggle = `<span class="people-seg" role="group">${[[1, 'soloMode'], [2, 'pairMode']].map(([n, key]) => `<button type="button" class="people-btn ${people === n ? 'selected' : ''}" data-people-mode="${n}">${t(key)}</button>`).join('')}</span>`;
+  $('#poseStrip').innerHTML = toggle + kRecipes.map((r, i) => {
+    if ((r.people === 2 ? 2 : 1) !== people) return '';
     const rt = r[lang] || r.ko;
-    return `<button type="button" class="dpose ${i === director.recipeIdx ? 'selected' : ''}" data-pose-idx="${i}"><img src="assets/poses/${r.svgType}.webp?v=14" alt="">${rt.chip}</button>`;
+    const badge = recipeBadges[r.svgType];
+    return `<button type="button" class="dpose ${i === director.recipeIdx ? 'selected' : ''}" data-pose-idx="${i}"><img src="${poseImage(r)}" alt="">${rt.chip}${badge ? `<em class="dpose-badge">${badge[lang] || badge.ko}</em>` : ''}</button>`;
   }).join('');
 }
 
@@ -481,6 +516,13 @@ function cancelPosePreview() {
 function beginPosePreview() {
   cancelPosePreview();
   if (activeTab !== 'camera' || document.hidden || director.customPhotoUrl || !director.posePreview) return;
+  if (director.skipIntro) {
+    // Straight to the live camera (keep a running stream when only the pose changed).
+    if (director.stream) { updateCameraUI(); return; }
+    cancelCountdown();
+    startCameraStream();
+    return;
+  }
   stopCamera();
   cancelCountdown();
   const box = $('#poseIntro');
@@ -560,7 +602,9 @@ function enableGyro() {
     gyroBound = true;
     window.addEventListener('deviceorientation', e => {
       if (typeof e.gamma === 'number') {
-        director.tiltDeg = Math.max(-35, Math.min(35, Math.round(e.gamma)));
+        const tilt = Math.max(-35, Math.min(35, Math.round(e.gamma)));
+        if (tilt === director.tiltDeg) return;
+        director.tiltDeg = tilt;
         updateCameraUI();
       }
     });
@@ -580,6 +624,8 @@ function captureViewfinder(asStory = false) {
   const sw = isLive ? v.videoWidth : img.naturalWidth;
   const sh = isLive ? v.videoHeight : img.naturalHeight;
   if (!sw || !sh) return toast(t('toastCameraFail'));
+  const stage = $('#viewfinderStage');
+  stage.classList.remove('flash'); void stage.offsetWidth; stage.classList.add('flash');
 
   try {
     const mirror = isLive && director.facingMode === 'user';
@@ -594,13 +640,26 @@ function captureViewfinder(asStory = false) {
 
     const W = 1080, H = 1920;
     c.width = W; c.height = H;
-    ctx.fillStyle = '#131513';
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#ffe3ec'); bg.addColorStop(0.55, '#fff4ee'); bg.addColorStop(1, '#e9e4ff');
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
-    const pad = 64, topY = 200, pW = W - pad * 2, pH = 1320;
+    // soft polka dots
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    for (let y = 40; y < H; y += 120) for (let x = (y / 120) % 2 ? 60 : 0; x < W; x += 120) { ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill(); }
+    const pad = 90, topY = 250, pW = W - pad * 2, pH = 1260;
+    // polaroid frame
+    ctx.save();
+    ctx.shadowColor = 'rgba(160, 80, 110, 0.22)'; ctx.shadowBlur = 50; ctx.shadowOffsetY = 18;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(pad - 30, topY - 30, pW + 60, pH + 250, 36); else ctx.rect(pad - 30, topY - 30, pW + 60, pH + 250);
+    ctx.fill();
+    ctx.restore();
     const sc = Math.max(pW / sw, pH / sh);
     ctx.save();
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(pad, topY, pW, pH, 40);
+    if (ctx.roundRect) ctx.roundRect(pad, topY, pW, pH, 22);
     else ctx.rect(pad, topY, pW, pH);
     ctx.clip();
     if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
@@ -610,23 +669,46 @@ function captureViewfinder(asStory = false) {
     const spot = getActiveSpot();
     const sText = spot[lang] || spot.ko;
     const { score } = computeCoaching();
-    ctx.fillStyle = '#ff5a36';
-    ctx.font = '800 44px "DM Sans", sans-serif';
-    ctx.fillText('Pilk', pad, 122);
-    ctx.fillStyle = '#4ade80';
-    ctx.textAlign = 'right';
-    ctx.font = '800 34px "DM Sans", sans-serif';
-    ctx.fillText(`K-MATCH ${score}%`, W - pad, 122);
+    const sans = lang === 'ja' ? '"Zen Maru Gothic", "Noto Sans JP"' : '"Noto Sans KR"';
+    // header
+    let tagX = pad + 150;
+    if (brandLogo.complete && brandLogo.naturalWidth) {
+      const lh = 104, lw = lh * brandLogo.naturalWidth / brandLogo.naturalHeight;
+      ctx.drawImage(brandLogo, pad - 20, 78, lw, lh);
+      tagX = pad - 20 + lw + 24;
+    } else {
+      ctx.fillStyle = '#843346';
+      ctx.font = '700 64px "Quicksand", sans-serif';
+      ctx.fillText('Pilk', pad - 10, 160);
+    }
+    ctx.font = `700 30px ${sans}, sans-serif`;
+    ctx.fillStyle = '#8d6b7b';
+    ctx.fillText(t('tagline'), tagX, 148);
+    // vibe sticker (tilted)
+    ctx.save();
+    ctx.translate(W - pad - 120, topY + 40);
+    ctx.rotate(0.12);
+    ctx.fillStyle = '#ff6f91';
+    ctx.beginPath(); ctx.arc(0, 0, 118, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+    ctx.font = `700 28px ${sans}, sans-serif`;
+    ctx.fillText(t('vibeLabel'), 0, -22);
+    ctx.font = '700 66px "Quicksand", sans-serif';
+    ctx.fillText(`${score}%`, 0, 48);
+    ctx.restore();
+    // caption on polaroid
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '800 48px "Noto Sans KR", "DM Sans", sans-serif';
-    ctx.fillText(sText[0], pad, 1625);
-    ctx.fillStyle = 'rgba(255,255,255,0.72)';
-    ctx.font = '500 28px "Noto Sans KR", "DM Sans", sans-serif';
-    ctx.fillText(`${sText[1]} · ${director.flip180 ? '180° Flip' : 'Standard'} · ${director.lens}`, pad, 1682);
-    ctx.fillStyle = '#ff8c69';
-    ctx.font = '700 26px "DM Sans", sans-serif';
-    ctx.fillText(`#PILK  #PictureItLikeKorean  ${sText[3]}`, pad, 1748);
+    ctx.fillStyle = '#3d2f3a';
+    ctx.font = `700 54px ${sans}, sans-serif`;
+    ctx.fillText(`${sText[0]}`, pad, topY + pH + 100);
+    ctx.fillStyle = '#9a8a93';
+    ctx.font = `500 30px ${sans}, sans-serif`;
+    const rt = getActiveRecipe()[lang] || getActiveRecipe().ko;
+    ctx.fillText(`📍 ${sText[1]}  ·  ${rt.chip}  ·  ${director.lens}`, pad, topY + pH + 158);
+    ctx.fillStyle = '#e0507a';
+    ctx.font = '700 32px "Quicksand", sans-serif';
+    ctx.fillText(lang === 'ja' ? '#韓国っぽ  #韓国旅行  #PILK' : `#PILK  #PictureItLikeKorean  ${sText[3] || ''}`, pad - 10, H - 110);
 
     downloadCanvas(c, `pilk-story-${spot.id}.png`, 'image/png', 0.95);
     toast(t('toastStorySaved'));
@@ -699,9 +781,44 @@ function showCreditsModal() {
   `);
 }
 
+function showHowTo() {
+  const h = howtoCopy[lang] || howtoCopy.ko;
+  openModal(`<section class="modal-body howto">
+    <h2>${h.title}</h2><p class="howto-sub">${h.sub}</p>
+    <ol>${h.steps.map(([emoji, title, body], i) => `<li><span class="howto-emoji" aria-hidden="true">${emoji}</span><div><b><i>${i + 1}</i>${title}</b><p>${body}</p></div></li>`).join('')}</ol>
+    <p class="howto-privacy">${h.privacy}</p>
+    <button type="button" class="btn primary howto-start" id="howtoStart">${h.start}</button>
+  </section>`);
+  $('#howtoStart').onclick = closeModal;
+  // The guide pauses the 5 s pose example; resume it once the guide is closed.
+  modal.addEventListener('close', () => {
+    persist('pilk-v5-howto', '1');
+    if (activeTab === 'camera' && !director.stream) beginPosePreview();
+  }, { once: true });
+}
+
+const themeColors = { pink: '#fff5f3', blue: '#f2f7ff', dark: '#19151d' };
+function applyTheme(name) {
+  const theme = themeColors[name] ? name : 'pink';
+  if (theme === 'pink') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', theme);
+  document.querySelector('meta[name="theme-color"]').content = themeColors[theme];
+  $('.brand-logo').src = theme === 'dark' ? 'assets/brand/pilk-logo-dark.png' : 'assets/brand/pilk-logo.png';
+  $$('[data-theme-pick]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePick === theme)));
+  return theme;
+}
+
 function renderAll() {
   document.documentElement.lang = lang;
   hydrate();
+  const howtoLabel = (howtoCopy[lang] || howtoCopy.ko).btn;
+  $('#howtoBtn').setAttribute('aria-label', howtoLabel);
+  $('#howtoBtn').title = howtoLabel;
+  $('#howtoRowLabel').textContent = howtoLabel;
+  for (const [id, key] of [['guideToggleBtn', 'btnGuide'], ['switchFacingBtn', 'btnSwitch'], ['helperModeBtn', 'btnHelper']]) {
+    $('#' + id).title = t(key);
+    if (id !== 'guideToggleBtn') $('#' + id).setAttribute('aria-label', t(key));
+  }
   ['ko', 'en', 'ja'].forEach(c => {
     const b = $(`#lang-${c}`);
     b.classList.toggle('selected', lang === c);
@@ -782,6 +899,17 @@ $('#btnDistCycle').onclick = () => {
 
 $('#opacitySlider').oninput = e => { director.opacity = +e.target.value; updateCameraUI(); };
 $('#gridToggle').onchange = e => { director.showGrid = e.target.checked; updateCameraUI(); };
+function setGuide(on) {
+  director.showGuide = on;
+  persist('pilk-v5-guide', on ? '1' : '0');
+  poseTracking.setVisible(on);
+  updateCameraUI();
+}
+$('#guideToggleBtn').onclick = () => { setGuide(!director.showGuide); toast(t(director.showGuide ? 'guideOn' : 'guideOff')); };
+$('#skeletonToggle').onchange = e => setGuide(e.target.checked);
+$('#skipIntroToggle').onchange = e => { director.skipIntro = e.target.checked; persist('pilk-v5-skip-intro', e.target.checked ? '1' : '0'); };
+$('#skipIntroBtn').onclick = () => { cancelPosePreview(); startCameraStream(); };
+poseTracking.setVisible(director.showGuide);
 
 $('#uploadSceneInput').onchange = e => {
   const file = e.target.files?.[0];
@@ -798,10 +926,17 @@ $('#uploadSceneInput').onchange = e => {
 $('#searchInput').oninput = e => { searchQuery = e.target.value; spotLimit = 8; renderSpotsPage(); };
 $('#loadMoreBtn').onclick = () => { spotLimit += 8; renderSpotsPage(); };
 $('#openCreditsBtn').onclick = showCreditsModal;
+$('#howtoBtn').onclick = showHowTo;
+$('#openHowtoBtn').onclick = showHowTo;
 document.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
 
+
+  if (b.dataset.themePick) {
+    persist('pilk-v5-theme', applyTheme(b.dataset.themePick));
+    return;
+  }
 
   if (b.dataset.tab) {
     switchTab(b.dataset.tab);
@@ -819,6 +954,14 @@ document.addEventListener('click', e => {
     return;
   }
 
+  if (b.dataset.peopleMode) {
+    const want = +b.dataset.peopleMode;
+    if ((getActiveRecipe().people === 2 ? 2 : 1) === want) return;
+    const idx = kRecipes.findIndex(r => (r.people === 2 ? 2 : 1) === want && (want === 2 || r.svgType === 'flip'));
+    // Reuse the pose-selection flow below.
+    b.dataset.poseIdx = String(idx);
+  }
+
   if (b.dataset.poseIdx !== undefined) {
     director.posePreview = true;
     director.recipeIdx = +b.dataset.poseIdx;
@@ -829,6 +972,7 @@ document.addEventListener('click', e => {
     director.lens = r.recommendedLens;
     director.frontFoot = r.recommendedFrontFoot;
     director.distance = 0;
+    renderPoseStrip();
     updateCameraUI();
     beginPosePreview();
     if (director.mode === 'C') speakCoaching();
@@ -909,5 +1053,7 @@ window.addEventListener('hashchange', () => {
 
 // Boot
 renderAll();
+try { applyTheme(localStorage.getItem('pilk-v5-theme') || 'pink'); } catch { applyTheme('pink'); }
 const initialHash = location.hash.slice(1);
 switchTab(validTabs.includes(initialHash) ? initialHash : 'camera', false);
+try { if (!localStorage.getItem('pilk-v5-howto')) showHowTo(); } catch { showHowTo(); }
