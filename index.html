@@ -3,22 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f7f6f2">
+  <meta name="theme-color" content="#fff5f3">
   <meta name="description" content="PILK — Picture It Like Korean. 실시간 한국식 포토 코칭 & 주변 추천.">
   <title>Pilk · Picture It Like Korean</title>
-  <link rel="icon" href="assets/pilk-studio.svg?v=19" type="image/svg+xml">
+  <link rel="icon" href="assets/brand/favicon-64.png" type="image/png" sizes="64x64">
+  <link rel="icon" href="assets/brand/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Quicksand:wght@600;700&family=Zen+Maru+Gothic:wght@500;700&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/leaflet/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=19">
+  <script>(function(){try{var th=localStorage.getItem("pilk-v5-theme");if(th==="blue"||th==="dark")document.documentElement.setAttribute("data-theme",th);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
 
 <header class="app-bar">
   <button type="button" class="brand" data-tab="camera" aria-label="Pilk">
-    <img class="brand-symbol" src="assets/pilk-studio.svg?v=19" alt="">
-    <span class="brand-name">Pilk</span>
+    <img class="brand-logo" src="assets/brand/pilk-logo.png" alt="Pilk" width="1564" height="566">
+    <small class="brand-tag" data-t="tagline"></small>
   </button>
 
   <!-- Desktop top tab bar (hidden on mobile where bottom tab bar is used) -->
@@ -29,6 +33,7 @@
   </nav>
 
   <div class="bar-right">
+    <button type="button" class="howto-btn" id="howtoBtn" aria-label="How to use">?</button>
     <div class="lang-pill" role="group" aria-label="Language">
       <button type="button" id="lang-ko" class="selected" aria-pressed="true">KR</button>
       <button type="button" id="lang-en" aria-pressed="false">EN</button>
@@ -47,7 +52,7 @@
         <video id="stageVideo" autoplay playsinline muted></video>
         <canvas id="landmarks" aria-hidden="true" hidden></canvas>
 
-        <div id="poseIntro" hidden><strong id="introNumber">5</strong><span data-t="introHint"></span></div>
+        <div id="poseIntro" hidden><strong id="introNumber">5</strong><span data-t="introHint"></span><button type="button" id="skipIntroBtn" data-t="skipIntro"></button></div>
         <output id="countdown" hidden aria-live="polite"></output>
         <div class="vf-grid" id="vfGrid"></div>
         <div class="vf-foot-line" id="vfFootLine"><span>FOOT LINE</span></div>
@@ -64,10 +69,11 @@
             <button type="button" class="scan-pill-btn" id="vfScanBtn">
               <span data-icon="scan"></span><span data-t="scanAction"></span>
             </button>
+            <button type="button" class="glass-btn" id="guideToggleBtn" aria-pressed="true"><span data-icon="eye"></span></button>
             <button type="button" class="glass-btn" id="switchFacingBtn" aria-label="Switch front/rear camera">
               <span data-icon="flipcam"></span>
             </button>
-            <button type="button" class="glass-btn" id="helperModeBtn" aria-label="10s Helper Card">👥</button>
+            <button type="button" class="glass-btn" id="helperModeBtn" aria-label="10s Helper Card"><span data-icon="helper"></span></button>
           </div>
         </div>
 
@@ -76,6 +82,7 @@
 
         <!-- Single-Line Live Cue -->
         <div class="vf-cue">
+          <div class="vf-vibe" id="vfVibe"><span class="vf-vibe-label" data-t="vibeLabel"></span><span class="vf-vibe-bar"><i></i></span><b id="vfVibeValue"></b></div>
           <p id="vfDirText"></p>
         </div>
 
@@ -136,7 +143,7 @@
   <!-- ==================== PAGE 2: NEARBY & LOCAL COUPONS ==================== -->
   <section class="tab-page" id="page-nearby" data-page="nearby">
     <div class="page-head">
-      <h1 data-t="nearbyHeading"></h1>
+      <h1 data-t="nearbyHeading" data-eyebrow="Explore"></h1>
       <button type="button" class="btn primary sm" id="rescanBtn">
         <span data-icon="scan"></span><span data-t="rescanBtn"></span>
       </button>
@@ -170,7 +177,7 @@
     <p class="coupon-disclaimer" data-t="couponDisclaimer"></p>
     </details></div><div class="spots-column">
     <div class="page-head">
-      <h1 data-t="spotsHeading"></h1>
+      <h1 data-t="spotsHeading" data-eyebrow="Spots"></h1>
       <label class="search-pill">
         <span data-icon="search"></span>
         <input id="searchInput" type="search" data-placeholder="searchPlaceholder">
@@ -196,19 +203,35 @@
   <!-- ==================== PAGE 4: SAVED & SETTINGS ==================== -->
   <section class="tab-page" id="page-saved" data-page="saved">
     <div class="page-head">
-      <h1 data-t="savedHeading"></h1>
+      <h1 data-t="savedHeading" data-eyebrow="Favorites"></h1>
     </div>
 
     <div id="savedContent"></div>
 
     <div class="settings-card">
       <h3 data-t="settingsTitle"></h3>
+      <div class="setting-row theme-row">
+        <span data-t="themeLabel"></span>
+        <div class="theme-swatches" role="group">
+          <button type="button" class="theme-swatch" data-theme-pick="pink"><i></i><span data-t="themePink"></span></button>
+          <button type="button" class="theme-swatch" data-theme-pick="blue"><i></i><span data-t="themeBlue"></span></button>
+          <button type="button" class="theme-swatch" data-theme-pick="dark"><i></i><span data-t="themeDark"></span></button>
+        </div>
+      </div>
       <label class="setting-row">
         <span data-t="opacityLabel"></span>
         <div class="range-wrap">
           <input type="range" id="opacitySlider" min="15" max="100" value="72">
           <b id="opacityVal">72%</b>
         </div>
+      </label>
+      <label class="setting-row">
+        <span data-t="skeletonSetting"></span>
+        <input type="checkbox" id="skeletonToggle" checked>
+      </label>
+      <label class="setting-row">
+        <span data-t="skipIntroSetting"></span>
+        <input type="checkbox" id="skipIntroToggle">
       </label>
       <label class="setting-row">
         <span data-t="gridLabel"></span>
@@ -218,6 +241,9 @@
 
     <div class="settings-card">
       <h3 data-t="infoTitle"></h3>
+      <button type="button" class="info-link-row" id="openHowtoBtn">
+        <span id="howtoRowLabel"></span><span>›</span>
+      </button>
       <button type="button" class="info-link-row" id="openCreditsBtn">
         <span data-t="footerCredits"></span><span>↗</span>
       </button>
@@ -249,14 +275,15 @@
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="spots-data.js?v=14"></script>
-<script src="pilk-data.js?v=17"></script>
+<script src="pilk-data.js?v=22"></script>
 <script src="assets/leaflet/leaflet.js"></script>
 <script src="explore-map.js?v=14"></script>
 <script src="poses.js"></script>
 <script src="casting-listings.js"></script>
-<script src="studio.js?v=14"></script>
-<script src="pose-tracking.js?v=15"></script>
-<script src="scene-meter.js?v=16"></script>
-<script src="app.js?v=18"></script>
+<script src="studio.js?v=15"></script>
+<script src="pose-templates.js?v=1"></script>
+<script src="pose-tracking.js?v=19"></script>
+<script src="scene-meter.js?v=17"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>
