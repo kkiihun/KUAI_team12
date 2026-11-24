@@ -72,6 +72,8 @@ const copy = {
     footerCredits: '사진 출처',
     creditsTitle: '사진 출처',
     creditsDesc: '촬영 사진과 업로드 이미지는 기기 내에서만 처리됩니다.',
+    creditsAi: '로고·앱 아이콘과 2인 포즈 예시 사진(3장)은 생성형 AI(GPT)로 만든 이미지입니다. 실제 인물이 아닙니다.',
+    creditsSpots: '촬영 스팟 사진',
     // Toasts
     toastAdded: '보관함에 저장했어요.',
     toastRemoved: '삭제했어요.',
@@ -146,6 +148,8 @@ const copy = {
     footerCredits: 'Photo Credits',
     creditsTitle: 'Photo Credits',
     creditsDesc: 'All photos are processed locally in your browser.',
+    creditsAi: 'The logo, app icons and the three two-person example photos were created with generative AI (GPT). They do not show real people.',
+    creditsSpots: 'Spot photos',
     toastAdded: 'Saved!',
     toastRemoved: 'Removed.',
     toastCoupon: 'Coupon saved!',
@@ -178,7 +182,7 @@ const copy = {
     helperTitle: '撮ってくれる方に見せてください',
     helperClose: 'カメラに戻る',
     flipGuideTitle: '📐 「真上ショット」ってなに？',
-    flipGuideDesc: '片腕を頭の上までまっすぐ伸ばして、レンズを足元に向けます。顔が小さく、脚が長く見える韓国で人気の撮り方です。',
+    flipGuideDesc: '片腕を頭の上までまっすぐ伸ばして、レンズを足元に向けます。顔が小さく、脚が長く見える人気の撮り方です。',
     flipGuideNormal: '通常の目線撮影',
     flipGuideNormalNote: '正面アングル → 普通で硬い印象',
     flipGuideInverted: '真上からの広角セルフィー',
@@ -219,6 +223,8 @@ const copy = {
     footerCredits: '写真の出典',
     creditsTitle: '写真の出典',
     creditsDesc: '写真はブラウザ内でのみ処理されます。',
+    creditsAi: 'ロゴ・アプリアイコンと、ふたりポーズのお手本写真（3枚）は生成AI（GPT）で作成した画像です。実在の人物ではありません。',
+    creditsSpots: 'スポット写真',
     toastAdded: 'お気に入りに追加しました ♡',
     toastRemoved: 'お気に入りから外しました',
     toastCoupon: 'クーポンをゲットしました ♪',
@@ -384,9 +390,9 @@ const kRecipes = [
 ];
 
 // Display extras: K-vibe meter label and pose badges (Japanese users scan for 人気/トレンド cues).
-Object.assign(copy.ko, {themeLabel:'테마 색상',themePink:'핑크',themeBlue:'블루',themeDark:'다크',btnGuide:'가이드 표시/숨기기',btnSwitch:'전면/후면 카메라 전환',btnHelper:'찍어주는 분께 보여줄 안내',guideOn:'가이드 표시',guideOff:'가이드 숨김',toolsMenu:'기능',btnScan:'배경 스캔',menuGuide:'가이드',menuSwitch:'카메라 전환',menuHelper:'촬영 안내 카드',menuAutoCam:'자동 켜기',autoCamOn:'카메라 자동 켜기 ON',autoCamOff:'카메라 자동 켜기 OFF',camFront:'전면',camRear:'후면',skipIntro:'바로 카메라 ›',skipIntroSetting:'예시 포즈 건너뛰고 바로 카메라 켜기',skeletonSetting:'자세 가이드 선 표시',vibeLabel:'한국st 지수', eyebrowCam:'Camera', tagline:'한국인처럼 찍는 카메라'});
-Object.assign(copy.en, {themeLabel:'Theme',themePink:'Pink',themeBlue:'Blue',themeDark:'Dark',btnGuide:'Show/hide guide',btnSwitch:'Switch front/rear camera',btnHelper:'Guide card for your photographer',guideOn:'Guide shown',guideOff:'Guide hidden',toolsMenu:'Tools',btnScan:'Scan Scene',menuGuide:'Guide',menuSwitch:'Flip Camera',menuHelper:'Helper Card',menuAutoCam:'Auto Camera',autoCamOn:'Auto-start camera ON',autoCamOff:'Auto-start camera OFF',camFront:'Front',camRear:'Rear',skipIntro:'Camera now ›',skipIntroSetting:'Skip the example pose and open the camera',skeletonSetting:'Show pose guide lines',vibeLabel:'K-vibe', eyebrowCam:'Camera', tagline:'Shoot like a Korean local'});
-Object.assign(copy.ja, {themeLabel:'テーマカラー',themePink:'ピンク',themeBlue:'ブルー',themeDark:'ダーク',btnGuide:'ガイドの表示/非表示',btnSwitch:'イン/アウトカメラ切替',btnHelper:'撮ってくれる方への説明カード',guideOn:'ガイドを表示',guideOff:'ガイドを非表示',toolsMenu:'機能',btnScan:'背景スキャン',menuGuide:'ガイド',menuSwitch:'カメラ切替',menuHelper:'撮影案内カード',menuAutoCam:'自動起動',autoCamOn:'カメラ自動起動 ON',autoCamOff:'カメラ自動起動 OFF',camFront:'イン',camRear:'アウト',skipIntro:'すぐ撮る ›',skipIntroSetting:'お手本をとばしてすぐカメラを起動',skeletonSetting:'ポーズガイド線を表示',vibeLabel:'韓国っぽ度', eyebrowCam:'Camera', tagline:'韓国っぽ写真が撮れるカメラ'});
+Object.assign(copy.ko, {themeLabel:'테마 색상',themePink:'핑크',themeBlue:'블루',themeDark:'다크',btnGuide:'가이드 표시/숨기기',btnSwitch:'전면/후면 카메라 전환',btnHelper:'찍어주는 분께 보여줄 안내',guideOn:'가이드 표시',guideOff:'가이드 숨김',toolsMenu:'기능',btnScan:'배경 스캔',menuGuide:'가이드',menuSwitch:'카메라 전환',menuHelper:'촬영 안내 카드',menuAutoCam:'자동 켜기',autoCamOn:'카메라 자동 켜기 ON',autoCamOff:'카메라 자동 켜기 OFF',camFront:'전면',camRear:'후면',skipIntro:'바로 카메라 ›',skipIntroSetting:'예시 포즈 건너뛰고 바로 카메라 켜기',skeletonSetting:'자세 가이드 선 표시',vibeLabel:'포즈 일치도', eyebrowCam:'Camera', tagline:'여행 사진 포즈 코치'});
+Object.assign(copy.en, {themeLabel:'Theme',themePink:'Pink',themeBlue:'Blue',themeDark:'Dark',btnGuide:'Show/hide guide',btnSwitch:'Switch front/rear camera',btnHelper:'Guide card for your photographer',guideOn:'Guide shown',guideOff:'Guide hidden',toolsMenu:'Tools',btnScan:'Scan Scene',menuGuide:'Guide',menuSwitch:'Flip Camera',menuHelper:'Helper Card',menuAutoCam:'Auto Camera',autoCamOn:'Auto-start camera ON',autoCamOff:'Auto-start camera OFF',camFront:'Front',camRear:'Rear',skipIntro:'Camera now ›',skipIntroSetting:'Skip the example pose and open the camera',skeletonSetting:'Show pose guide lines',vibeLabel:'Pose match', eyebrowCam:'Camera', tagline:'Your travel photo pose coach'});
+Object.assign(copy.ja, {themeLabel:'テーマカラー',themePink:'ピンク',themeBlue:'ブルー',themeDark:'ダーク',btnGuide:'ガイドの表示/非表示',btnSwitch:'イン/アウトカメラ切替',btnHelper:'撮ってくれる方への説明カード',guideOn:'ガイドを表示',guideOff:'ガイドを非表示',toolsMenu:'機能',btnScan:'背景スキャン',menuGuide:'ガイド',menuSwitch:'カメラ切替',menuHelper:'撮影案内カード',menuAutoCam:'自動起動',autoCamOn:'カメラ自動起動 ON',autoCamOff:'カメラ自動起動 OFF',camFront:'イン',camRear:'アウト',skipIntro:'すぐ撮る ›',skipIntroSetting:'お手本をとばしてすぐカメラを起動',skeletonSetting:'ポーズガイド線を表示',vibeLabel:'ポーズ一致度', eyebrowCam:'Camera', tagline:'旅フォトのポーズコーチ'});
 const recipeBadges = {
   high05:{ko:'트렌드',en:'Trend',ja:'トレンド'},
   flip:{ko:'인기 1위',en:'#1',ja:'人気No.1'},
@@ -395,30 +401,31 @@ const recipeBadges = {
 
 // In-app "How to use" guide (shown on first visit, reopen with the ? button).
 const howtoCopy = {
-  ko:{btn:'이용 안내',title:'Pilk 사용법',sub:'4단계면 한국 감성 인생샷 완성!',start:'시작하기',steps:[
+  ko:{btn:'이용 안내',title:'Pilk 사용법',sub:'4단계면 여행 인생샷 완성!',start:'시작하기',steps:[
     ['🧍','포즈 고르기','카메라 아래 목록에서 따라 할 예시 포즈를 골라요. 처음이라면 「인기 1위」 전신 비율 추천!'],
-    ['📸','카메라 비추기','몸 위에 선이 겹쳐요. 흰 점선이 예시 포즈, 빨갛게 빛나는 부분을 고치면 「한국st 지수」가 올라가요. 👁 버튼으로 선을 숨길 수 있어요.'],
+    ['📸','카메라 비추기','몸 위에 선이 겹쳐요. 흰 점선이 예시 포즈, 빨갛게 빛나는 부분을 고치면 「포즈 일치도」가 올라가요. 👁 버튼으로 선을 숨길 수 있어요.'],
     ['👆','사람이 많을 땐','찍고 싶은 사람을 화면에서 탭하면 그 사람만 따라가며 코칭해요.'],
     ['✨','찍고 공유하기','셔터로 저장·편집, 「스토리」로 인스타용 카드를 만들어요. 👥 버튼은 찍어주는 분께 보여줄 안내 카드예요.']],
     privacy:'🔒 카메라 영상과 사진은 기기 안에서만 처리되고 외부로 전송되지 않아요.'},
-  en:{btn:'How to use',title:'How to use Pilk',sub:'Four steps to a Korean-style shot',start:"Let's go",steps:[
+  en:{btn:'How to use',title:'How to use Pilk',sub:'Four steps to a better travel shot',start:"Let's go",steps:[
     ['🧍','Pick a pose','Choose an example pose under the camera. New here? Try the #1 “Full Body”.'],
-    ['📸','Point the camera','Lines appear on your body. The white dotted line is the example; fix the part glowing red to raise your K-vibe score. Hide the lines with 👁.'],
+    ['📸','Point the camera','Lines appear on your body. The white dotted line is the example; fix the part glowing red to raise your pose match score. Hide the lines with 👁.'],
     ['👆','Crowded spot?','Tap the person you want to shoot and Pilk follows only them.'],
     ['✨','Shoot & share','Save and edit with the shutter, or make an Instagram card with “Story”. 👥 shows a guide card for whoever is taking your photo.']],
     privacy:'🔒 Camera frames and photos are processed on your device and never uploaded.'},
-  ja:{btn:'使い方',title:'Pilkの使い方',sub:'4ステップで韓国っぽ写真が撮れます ♡',start:'はじめる',steps:[
+  ja:{btn:'使い方',title:'Pilkの使い方',sub:'4ステップで、旅の写真がもっと素敵に ♡',start:'はじめる',steps:[
     ['🧍','ポーズを選ぶ','カメラの下からお手本ポーズを選びます。はじめての方は「人気No.1」の全身スタイルアップがおすすめ！'],
-    ['📸','カメラを向ける','体にガイド線が重なります。白い点線がお手本、赤く光る部分を直すと「韓国っぽ度」がアップ。👁ボタンで線を隠せます。'],
+    ['📸','カメラを向ける','体にガイド線が重なります。白い点線がお手本、赤く光る部分を直すと「ポーズ一致度」がアップ。👁ボタンで線を隠せます。'],
     ['👆','人が多いときは','撮りたい人を画面でタップすると、その人だけを追いかけてアドバイスします。'],
     ['✨','撮ってシェア','シャッターで保存・編集、「ストーリー」でインスタ用カードに。👥ボタンは撮ってくれる方に見せる説明カードです。']],
     privacy:'🔒 カメラ映像と写真はスマホの中だけで処理され、外部に送信されません。'}
 };
 
-// 2-person poses (couples / friends). Judged by pair rules in pose-tracking.js, not by a reference photo.
+// 2-person poses (couples / friends). Compared with the reference photos (pairTemplates in pose-templates.js).
 kRecipes.push(
   {
-    id: 'pair_heart', svgType: 'pair_heart', people: 2, image: 'assets/poses/pair_heart.svg',
+    // Bodies touch in this pose: the pose model cannot reliably tell whose arm is whose, so no score (guide only).
+    id: 'pair_heart', svgType: 'pair_heart', people: 2, judge: false, image: 'assets/poses/pair_heart.webp?v=1',
     recommendedFlip: false, recommendedLens: '1×', recommendedFrontFoot: false,
     ko: {chip:'둘이서 하트', shortCue:'서로 가까이 서서, 안쪽 손을 맞대 하트를 만들어요',
       steps:['어깨가 닿을 만큼 가까이', '안쪽 손으로 반쪽 하트', '가슴 높이에서 맞대기'],
@@ -431,7 +438,7 @@ kRecipes.push(
       helperText:'① ふたりが真ん中に来るように\n② 手のハートがしっかり入るように\n③ 笑った瞬間に押してください！'}
   },
   {
-    id: 'pair_walk', svgType: 'pair_walk', people: 2, image: 'assets/poses/pair_walk.svg',
+    id: 'pair_walk', svgType: 'pair_walk', people: 2, image: 'assets/poses/pair_walk.webp?v=1',
     recommendedFlip: false, recommendedLens: '1×', recommendedFrontFoot: true,
     ko: {chip:'나란히 걷기', shortCue:'카메라에서 같은 거리로 나란히, 함께 한 걸음 내디뎌요',
       steps:['같은 거리에 나란히', '손을 잡거나 가까이', '같은 발로 한 걸음'],
@@ -444,7 +451,8 @@ kRecipes.push(
       helperText:'① 腰の高さでふたりの全身を\n② 足元まで入れてください\n③ 歩き出す瞬間に連写で！'}
   },
   {
-    id: 'pair_back', svgType: 'pair_back', people: 2, image: 'assets/poses/pair_back.svg',
+    // Backs touch: same limitation as the heart pose, guide only.
+    id: 'pair_back', svgType: 'pair_back', people: 2, judge: false, image: 'assets/poses/pair_back.webp?v=1',
     recommendedFlip: false, recommendedLens: '1×', recommendedFrontFoot: false,
     ko: {chip:'등 맞대기', shortCue:'등을 맞대고 서서, 둘 다 바깥쪽을 바라봐요',
       steps:['등을 맞대기', '키 높이 맞추기', '둘 다 바깥쪽 보기'],

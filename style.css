@@ -1404,3 +1404,28 @@ body:not([data-active-tab="camera"]) .shutter-cam-ico {
   }
   body:not([data-active-tab="camera"]) .app-dock { display: none; }
 }
+
+/* ==================== CAMERA ASPECT RATIO (16:9 default / 4:3 / 1:1) ====================
+   .vf-zone is the space the layout gives the camera; the viewfinder is the largest
+   frame of the chosen ratio that fits inside it (centred), like a phone camera. */
+:root { --vf-ar: 0.5625; }
+.vf-zone { position:relative; display:grid; place-items:center; container-type:size; height:min(72dvh, 640px); }
+.vf-zone > .viewfinder {
+  width:min(100cqw, calc(100cqh * var(--vf-ar))) !important;
+  height:auto !important; aspect-ratio:var(--vf-ar) !important;
+  flex:none !important; max-width:none; transition:width .25s ease;
+}
+@media (max-width: 859px) {
+  body[data-active-tab="camera"] .vf-zone { flex:1 1 auto; min-height:0; height:auto; }
+}
+.vf-ratio-btn {
+  min-width:44px; height:28px; padding:0 9px; border-radius:99px;
+  background:rgba(255,255,255,.88); color:var(--ink); border:1px solid rgba(255,255,255,.9);
+  font:700 12px/1 'Quicksand','DM Sans',sans-serif; letter-spacing:.02em;
+  box-shadow:0 2px 8px rgba(0,0,0,.14);
+}
+:root[data-theme="dark"] .vf-ratio-btn { background:rgba(38,32,41,.9); color:var(--ink); border-color:rgba(255,255,255,.12); }
+
+/* Credits: generative-AI disclosure */
+.credits-ai { margin:10px 0 4px; padding:10px 12px; border-radius:12px; background:var(--lav-soft); color:var(--ink); font-size:12px; line-height:1.6; }
+.credits-sub { margin:14px 0 4px; font-size:12px; font-weight:700; color:var(--muted); }
