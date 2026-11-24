@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#fff5f3">
-  <meta name="description" content="PILK — Picture It Like Korean. 실시간 한국식 포토 코칭 & 주변 추천.">
-  <title>Pilk · Picture It Like Korean</title>
+  <meta name="description" content="Pilk — 여행지에서 실시간 포즈 코칭 & 주변 추천.">
+  <title>Pilk · Travel Photo Coach</title>
   <link rel="icon" href="assets/brand/favicon-64.png" type="image/png" sizes="64x64">
   <link rel="icon" href="assets/brand/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Quicksand:wght@600;700&family=Zen+Maru+Gothic:wght@500;700&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/leaflet/leaflet.css">
   <script>(function(){try{var th=localStorage.getItem("pilk-v5-theme");if(th==="blue"||th==="dark")document.documentElement.setAttribute("data-theme",th);}catch(e){}})();</script>
-  <link rel="stylesheet" href="style.css?v=39">
+  <link rel="stylesheet" href="style.css?v=41">
 </head>
 <body>
 
@@ -47,6 +47,7 @@
   <!-- ==================== PAGE 1: CAMERA (DEFAULT, ZERO-SCROLL) ==================== -->
   <section class="tab-page active" id="page-camera" data-page="camera">
     <div class="camera-card">
+      <div class="vf-zone">
       <div class="viewfinder" id="viewfinderStage">
         <img id="stageBgImg" src="assets/poses/flip.webp?v=14" alt="Scene">
         <video id="stageVideo" autoplay playsinline muted></video>
@@ -62,6 +63,7 @@
         <!-- Minimal Top Overlay -->
         <div class="vf-top">
           <div class="vf-top-left">
+            <button type="button" class="vf-ratio-btn" id="vfRatioBtn">16:9</button>
             <span class="match-pill" id="vfMatchPill" hidden><strong id="vfMatchScore">100%</strong></span>
           </div>
           <div class="vf-top-right">
@@ -94,6 +96,7 @@
           <div class="helper-box" id="vfHelperSteps"></div>
           <button type="button" class="btn primary" id="closeHelperBtn" data-t="helperClose"></button>
         </div>
+      </div>
       </div>
 
       <!-- Integrated Pose Strip -->
@@ -307,15 +310,15 @@
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="spots-data.js?v=14"></script>
-<script src="pilk-data.js?v=24"></script>
+<script src="pilk-data.js?v=28"></script>
 <script src="assets/leaflet/leaflet.js"></script>
 <script src="explore-map.js?v=14"></script>
 <script src="poses.js"></script>
 <script src="casting-listings.js"></script>
 <script src="studio.js?v=15"></script>
-<script src="pose-templates.js?v=1"></script>
-<script src="pose-tracking.js?v=19"></script>
+<script src="pose-templates.js?v=3"></script>
+<script src="pose-tracking.js?v=26"></script>
 <script src="scene-meter.js?v=17"></script>
-<script src="app.js?v=34"></script>
+<script src="app.js?v=37"></script>
 </body>
 </html>

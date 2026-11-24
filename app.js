@@ -46,6 +46,7 @@ const director = {
   opacity: 72,
   showGrid: true,
   showGuide: true,
+  ratio: '16:9',
   autoCamera: true,
   skipIntro: false,
   helperOpen: false,
@@ -66,6 +67,7 @@ try {
   savedSpots = JSON.parse(localStorage.getItem('pilk-v5-saved') || '[]').filter(id => spots.some(s => s.id === id));
   claimedCoupons = JSON.parse(localStorage.getItem('pilk-v5-coupons') || '[]');
   director.showGuide = localStorage.getItem('pilk-v5-guide') !== '0';
+  if (['16:9', '4:3', '1:1'].includes(localStorage.getItem('pilk-v5-ratio'))) director.ratio = localStorage.getItem('pilk-v5-ratio');
   director.autoCamera = localStorage.getItem('pilk-v5-auto-cam') !== '0';
   director.skipIntro = localStorage.getItem('pilk-v5-skip-intro') === '1';
 } catch {}
@@ -241,7 +243,7 @@ function updateCameraUI() {
     matchPill.classList.toggle('warn', coaching.score < 85);
   }
   const vibe = $('#vfVibe');
-  vibe.hidden = poseExample;
+  vibe.hidden = poseExample || (r.people === 2 && r.judge === false);
   vibe.style.setProperty('--vibe', coaching.score + '%');
   $('#vfVibeValue').textContent = coaching.score + '%';
   const liveMatch = director.stream && poseTracking.match();
@@ -602,7 +604,7 @@ async function startCameraStream() {
   try {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('Unavailable');
     const media = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: director.facingMode }, width: { ideal: 1600 }, height: { ideal: 1200 } },
+      video: { facingMode: { ideal: director.facingMode }, width: { ideal: 1920 }, height: { ideal: 1440 } },
       audio: false
     });
     if (token !== director.cameraToken) { media.getTracks().forEach(tr => tr.stop()); return; }
@@ -675,10 +677,18 @@ function captureViewfinder(asStory = false) {
     const mirror = isLive && director.facingMode === 'user';
     const c = document.createElement('canvas');
     const ctx = c.getContext('2d');
+    // Crop to the visible viewfinder area (the chosen 16:9 / 4:3 / 1:1 frame), like a phone camera.
+    const coverCrop = isLive || !stage.classList.contains('pose-example');
+    const vfRatio = stage.clientWidth / Math.max(1, stage.clientHeight);
+    let cx = 0, cy = 0, cw = sw, ch = sh;
+    if (coverCrop && vfRatio > 0) {
+      if (sw / sh > vfRatio) { cw = Math.round(sh * vfRatio); cx = Math.round((sw - cw) / 2); }
+      else { ch = Math.round(sw / vfRatio); cy = Math.round((sh - ch) / 2); }
+    }
     if (!asStory) {
-      c.width = sw; c.height = sh;
-      if (mirror) { ctx.translate(sw, 0); ctx.scale(-1, 1); }
-      ctx.drawImage(src, 0, 0, sw, sh);
+      c.width = cw; c.height = ch;
+      if (mirror) { ctx.translate(cw, 0); ctx.scale(-1, 1); }
+      ctx.drawImage(src, cx, cy, cw, ch, 0, 0, cw, ch);
       return openPhotoEditor(c);
     }
 
@@ -752,7 +762,7 @@ function captureViewfinder(asStory = false) {
     ctx.fillText(`📍 ${sText[1]}  ·  ${rt.chip}  ·  ${director.lens}`, pad, topY + pH + 158);
     ctx.fillStyle = '#e0507a';
     ctx.font = '700 32px "Quicksand", sans-serif';
-    ctx.fillText(lang === 'ja' ? '#韓国っぽ  #韓国旅行  #PILK' : `#PILK  #PictureItLikeKorean  ${sText[3] || ''}`, pad - 10, H - 110);
+    ctx.fillText(lang === 'ja' ? '#韓国旅行  #Pilk' : `#Pilk  #KoreaTrip  ${sText[3] || ''}`, pad - 10, H - 110);
 
     downloadCanvas(c, `pilk-story-${spot.id}.png`, 'image/png', 0.95);
     toast(t('toastStorySaved'));
@@ -818,6 +828,8 @@ function showCreditsModal() {
     <div class="modal-body">
       <h2>${t('creditsTitle')}</h2>
       <p style="font-size:12px;color:var(--muted)">${t('creditsDesc')}</p>
+      <p class="credits-ai">${t('creditsAi')}</p>
+      <h3 class="credits-sub">${t('creditsSpots')}</h3>
       <ul style="font-size:11.5px;line-height:1.9;padding-left:16px;max-height:300px;overflow:auto">
         ${spots.map(s => `<li><a href="${s.source}" target="_blank" rel="noopener noreferrer" style="text-decoration:underline">${(s[lang] || s.ko)[0]} · ${s.credit || 'Source'}</a></li>`).join('')}
       </ul>
@@ -1136,8 +1148,23 @@ window.addEventListener('hashchange', () => {
   if (validTabs.includes(h) && h !== activeTab) switchTab(h, false);
 });
 
+const ratioOrder = ['16:9', '4:3', '1:1'];
+function applyRatio(r) {
+  director.ratio = ratioOrder.includes(r) ? r : '16:9';
+  const [a, b] = director.ratio.split(':').map(Number);
+  // Portrait phone: 16:9 means a 9:16 tall frame.
+  document.documentElement.style.setProperty('--vf-ar', String(Math.min(a, b) / Math.max(a, b)));
+  $('#vfRatioBtn').textContent = director.ratio;
+  $('#vfRatioBtn').setAttribute('aria-label', 'Aspect ratio ' + director.ratio);
+}
+$('#vfRatioBtn').onclick = () => {
+  applyRatio(ratioOrder[(ratioOrder.indexOf(director.ratio) + 1) % ratioOrder.length]);
+  persist('pilk-v5-ratio', director.ratio);
+};
+
 // Boot
 renderAll();
+applyRatio(director.ratio);
 try { applyTheme(localStorage.getItem('pilk-v5-theme') || 'pink'); } catch { applyTheme('pink'); }
 const initialHash = location.hash.slice(1);
 switchTab(validTabs.includes(initialHash) ? initialHash : 'camera', false);

@@ -17,9 +17,9 @@ const poseTracking = (() => {
   const fctx = frame.getContext('2d', {alpha:false});
 
   const labels = {
-    ko:['인식 준비 중','사람을 화면에 담아주세요','얼굴 위치를 확인해 주세요','양발이 보이게 한 걸음 물러나세요','발끝 아래 여백을 조금 더 주세요','얼굴과 양발이 보여요','얼굴 위치 확인','자세 인식 사용 불가','가려졌어요 · 잠시 그대로','두 사람이 화면에 들어와 주세요','두 사람 모두 인식했어요!'],
-    en:['Loading tracker','Step into the frame','Bring your face into view','Step back to include both feet','Leave space below your feet','Face and both feet visible','Face in view','Tracking unavailable','Subject hidden · hold still','Both of you, step into the frame','Both people detected!'],
-    ja:['認識の準備中…','画面に入ってくださいね','お顔が見える位置へ','両足が入るよう一歩下がって','足元に少し余白を','お顔と両足OK！','お顔OK','姿勢認識を利用できません','隠れています・そのままで','ふたりで画面に入ってね','ふたりとも認識OK！']
+    ko:['인식 준비 중','사람을 화면에 담아주세요','얼굴 위치를 확인해 주세요','양발이 보이게 한 걸음 물러나세요','발끝 아래 여백을 조금 더 주세요','얼굴과 양발이 보여요','얼굴 위치 확인','자세 인식 사용 불가','가려졌어요 · 잠시 그대로','두 사람이 화면에 들어와 주세요','두 사람 모두 인식했어요!','예시를 보며 포즈를 맞춰보세요'],
+    en:['Loading tracker','Step into the frame','Bring your face into view','Step back to include both feet','Leave space below your feet','Face and both feet visible','Face in view','Tracking unavailable','Subject hidden · hold still','Both of you, step into the frame','Both people detected!','Match the example pose'],
+    ja:['認識の準備中…','画面に入ってくださいね','お顔が見える位置へ','両足が入るよう一歩下がって','足元に少し余白を','お顔と両足OK！','お顔OK','姿勢認識を利用できません','隠れています・そのままで','ふたりで画面に入ってね','ふたりとも認識OK！','お手本を見ながらポーズを合わせてね']
   };
   const crowdLabels = {ko:n=>`${n}명 인식 · 코칭할 사람을 탭하세요`,en:n=>`${n} people · tap who to coach`,ja:n=>`${n}人を検出・撮る人をタップ`};
   const lockedLabels = {ko:'선택한 사람을 따라가요',en:'Following your pick',ja:'選んだ人を追跡中'};
@@ -204,7 +204,13 @@ const poseTracking = (() => {
     const L=layout();
     const sx=toScreen(subject.joints[worst.b],L).x;
     const cx=(toScreen(subject.joints[11],L).x+toScreen(subject.joints[12],L).x)/2;
-    const side=sx<cx?W.left:W.right;
+    return limbCue(worst,sx<cx?W.left:W.right);
+  }
+  function limbCue(worst, side) {
+    const W=cueWords[lang];
+    const {kind,t,u}=worst;
+    if (kind==='torso') {const key=Math.abs(t.x)>Math.abs(u.x)?'lean':'upright';return {key,text:W[key]};}
+    if (kind==='head') {const key=Math.abs(t.y)>Math.abs(u.y)?'tilt':'level';return {key,text:W[key]};}
     let action;
     if (kind==='arm'||kind==='forearm') {
       if (t.y<u.y-0.25) action='raise';
@@ -260,72 +266,126 @@ const poseTracking = (() => {
     return tpl.pts.map(p=>({...toScreen({x:(uc.x+(p[0]*tpl.aspect-tc.x)*k)/aspect,y:uc.y+(p[1]-tc.y)*k},L),ok:p[2]>=VIS}));
   }
 
-  // ---------- 2-person poses: rule based (no reference photo) ----------
+  // ---------- 2-person poses: compared with the reference photo (pose-templates.js: pairTemplates) ----------
+  // Both people are compared limb by limb with the matching person in the photo (left with left),
+  // plus how far apart they stand and which way they face. Two people who touch are often merged
+  // into one by the detector, so when fewer than two separate people are found the frame is
+  // searched again in a left and a right half (splitDetector, IMAGE mode, one person each).
   const pairWords = {
-    ko:{close:'조금 더 가까이 붙어요',hands:'안쪽 손을 맞대 하트를 만들어요',high:'하트를 가슴 높이까지 올려요',same:'카메라에서 같은 거리에 나란히 서요',step:'둘 다 한 걸음 내디뎌요',feet:'발끝까지 보이게 조금 물러나요',backs:'등을 맞대요',out:'둘 다 바깥쪽을 바라봐요'},
-    en:{close:'Move a little closer together',hands:'Join your inner hands into a heart',high:'Raise the heart to chest height',same:'Stand at the same distance from the camera',step:'Both of you, take a step',feet:'Step back so your feet are in frame',backs:'Put your backs together',out:'Both look outward'},
-    ja:{close:'もう少しくっついて',hands:'内側の手を合わせてハートに',high:'ハートを胸の高さまで上げて',same:'カメラから同じ距離に並んで',step:'ふたりで一歩ふみ出して',feet:'足元まで入るよう少し下がって',backs:'背中をくっつけて',out:'ふたりとも外側を向いて'}
+    ko:{left:'왼쪽 사람 · ',right:'오른쪽 사람 · ',close:'조금 더 가까이 붙어요',apart:'조금만 떨어져 서요',face:'얼굴 방향을 예시처럼 돌려요'},
+    en:{left:'Left person: ',right:'Right person: ',close:'Move a little closer together',apart:'Give each other a little more space',face:'Turn your faces like the example'},
+    ja:{left:'左の人：',right:'右の人：',close:'もう少しくっついて',apart:'少しだけ離れて',face:'顔の向きをお手本に合わせて'}
   };
   const clamp01=v=>Math.max(0,Math.min(1,v));
-  function personGeo(points,L,aspect) {
-    const P=i=>(points[i].visibility??1)>=VIS?{x:points[i].x*aspect,y:points[i].y,sx:toScreen(points[i],L).x}:null;
-    const ls=P(11), rs=P(12);
-    const sw=ls&&rs?Math.max(0.03,Math.hypot(ls.x-rs.x,ls.y-rs.y)):0.08;
-    return {P,sw,ls,rs,swPx:ls&&rs?Math.max(10,Math.abs(ls.sx-rs.sx)):40,sx:(ls&&rs)?(ls.sx+rs.sx)/2:toScreen(points[0],L).x};
+  let splitDetector=null, splitLoading=null, visionApi=null, dbg=null, lastPair=null;
+  function ensureSplitDetector() {
+    if (splitDetector||splitLoading||!visionApi) return;
+    const {PoseLandmarker,files,model,delegate}=visionApi;
+    splitLoading=PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:model,delegate},runningMode:'IMAGE',numPoses:1,minPoseDetectionConfidence:0.3,minPosePresenceConfidence:0.3})
+      .then(d=>{splitDetector=d;}).catch(()=>{splitLoading=null;});
   }
-  // Pick the joint of a left/right pair that is closer to the partner on SCREEN.
-  const inner=(g,a,b,towardRight)=>{const pa=g.P(a),pb=g.P(b);if(!pa||!pb)return pa||pb;return towardRight?(pa.sx>pb.sx?pa:pb):(pa.sx<pb.sx?pa:pb);};
-  const outer=(g,a,b,towardRight)=>{const pa=g.P(a),pb=g.P(b);if(!pa||!pb)return null;return towardRight?(pa.sx>pb.sx?pb:pa):(pa.sx<pb.sx?pb:pa);};
-  const dist=(p,q)=>p&&q?Math.hypot(p.x-q.x,p.y-q.y):Infinity;
-  function pairRules(type,A,B) {
-    const sw=(A.sw+B.sw)/2;
-    const gap=dist(inner(A,11,12,true),inner(B,11,12,false))/sw;
-    const size=Math.min(A.sw,B.sw)/Math.max(A.sw,B.sw);
-    const rules=[];
-    if (type==='pair_heart') {
-      const wa=inner(A,15,16,true), wb=inner(B,15,16,false);
-      const sh=Math.min(A.ls?.y??1,A.rs?.y??1,B.ls?.y??1,B.rs?.y??1);
-      rules.push(['close',1,clamp01(1-(gap-1.6)/1.5)]);
-      rules.push(['hands',1.5,wa&&wb?clamp01(1-(dist(wa,wb)/sw-0.6)/1.2):0]);
-      rules.push(['high',1,wa&&wb?clamp01(1-((Math.max(wa.y,wb.y)-(sh+0.8*sw))/sw)):0]);
-    } else if (type==='pair_walk') {
-      const stride=g=>{const la=g.P(27),ra=g.P(28),lh=g.P(23),lk=g.P(25);if(!la||!ra)return null;const leg=lh&&lk?dist(lh,lk)+dist(lk,la):2*g.sw;return Math.abs(la.x-ra.x)/Math.max(0.02,leg);};
-      const sa=stride(A), sb=stride(B);
-      rules.push(['same',1.2,clamp01((size-0.6)/0.25)]);
-      rules.push(['close',1,clamp01(1-(gap-1.4)/1.5)]);
-      rules.push([sa===null||sb===null?'feet':'step',1,sa===null||sb===null?0:clamp01(Math.min(sa,sb)/0.25)]);
-    } else if (type==='pair_back') {
-      // Nose offset from the shoulder centre (screen px / shoulder width): profile facing away from the partner.
-      const faceOut=(g,towardRight)=>{const n=g.P(0);if(!n)return 0;const off=(n.sx-g.sx)/g.swPx;return clamp01(0.5+(towardRight?-off:off)/0.3);};
-      rules.push(['backs',1.5,clamp01(1-(gap-0.5)/1.0)]);
-      rules.push(['out',1,Math.min(faceOut(A,true),faceOut(B,false))]);
-      rules.push(['same',1,clamp01((size-0.6)/0.25)]);
+  const splitCanvas=document.createElement('canvas');
+  function splitDetect(split) {
+    const out=[];
+    for (const [x0,x1,side] of [[0,Math.min(1,split+0.06),-1],[Math.max(0,split-0.06),1,1]]) {
+      const w=Math.max(1,Math.round(frame.width*(x1-x0)));
+      splitCanvas.width=w; splitCanvas.height=frame.height;
+      splitCanvas.getContext('2d').drawImage(frame,-frame.width*x0,0);
+      const r=splitDetector.detect(splitCanvas);
+      const pts=r.landmarks?.[0];
+      if (pts) {
+        const points=pts.map(q=>({...q,x:x0+q.x*(x1-x0)}));const box=boxOf(points);
+        const sx=(points[11].x+points[12].x)/2;
+        if (box && (side<0?sx<split+0.04:sx>split-0.04)) out.push({points,box});
+      }
     }
-    const wsum=rules.reduce((s,r)=>s+r[1],0);
-    const score=Math.round(100*rules.reduce((s,r)=>s+r[1]*r[2],0)/Math.max(1e-3,wsum));
-    const worst=rules.reduce((w,r)=>!w||r[2]*r[1]<w[2]*w[1]?r:w,null);
-    return {score,allOk:rules.every(r=>r[2]>=0.85),worstKey:worst?.[0]};
+    return out;
   }
-  function evaluatePair(cands,L,now) {
-    const aspect=frame.width/frame.height;
+  const shoulderX=c=>(c.points[11].x+c.points[12].x)/2;
+  function separatedPair(cands) {
     const two=[...cands].sort((a,b)=>b.box.area-a.box.area).slice(0,2);
-    if (two.length<2) {lastMatch=null;return null;}
-    const geos=two.map(c=>({c,g:personGeo(c.points,L,aspect)})).sort((a,b)=>a.g.sx-b.g.sx);
-    const res=pairRules(getActiveRecipe().svgType,geos[0].g,geos[1].g);
-    scoreEma=scoreEma===null?res.score:scoreEma*0.75+res.score*0.25;
-    const W=pairWords[lang];
-    let key=res.allOk&&scoreEma>=85?'perfect':res.worstKey, text;
-    if (key==='perfect') {perfectSince ||= now; if (now-perfectSince<700) key='hold';} else perfectSince=0;
-    text=key==='perfect'?cueWords[lang].perfect:key==='hold'?cueWords[lang].hold:W[key];
-    if (lastMatch?.cue && key!==cueKey && now-cueSince<1200 && cueKey!=='hold' && key!=='hold' && cueKey!=='perfect') text=lastMatch.cue;
-    else {cueKey=key;cueSince=now;}
-    lastMatch={score:Math.round(scoreEma),cue:text,perfect:key==='perfect'};
-    return geos.map(x=>x.c);
+    // Same person found in both halves = boxes overlap heavily; real side-by-side people overlap little.
+    // A real person shows at least 12 clear joints and is not tiny next to the other (no ghosts in the background).
+    const solid=c=>c.points.filter(q=>(q.visibility??1)>=VIS).length>=12;
+    return two.length===2 && solid(two[0]) && solid(two[1]) && two[1].box.area>=0.25*two[0].box.area
+      && Math.abs(shoulderX(two[0])-shoulderX(two[1]))>0.08 && iou(two[0].box,two[1].box)<0.35 ? two : null;
+  }
+  // Points as seen on SCREEN (mirrored camera: x flipped, left/right joints swapped), like a photo.
+  function screenPoints(points,mirrored) {
+    return points.map((_,i)=>{const q=points[mirrored?SWAP[i]:i];const x=mirrored?1-q.x:q.x;return {x,y:q.y,sx:x,sy:q.y,v:q.visibility??1,held:false};});
+  }
+  function pairTemplate(flip) {
+    const t=typeof pairTemplates!=='undefined'&&pairTemplates[getActiveRecipe().svgType];
+    if (!t) return null;
+    if (!flip) return t;
+    const mirror=pts=>pts.map((_,i)=>{const q=pts[SWAP[i]];return [1-q[0],q[1],q[2]];});
+    return {aspect:t.aspect,people:[mirror(t.people[1]),mirror(t.people[0])]};
+  }
+  // Distance between the two shoulder centres (in shoulder widths) and each person's facing (nose vs shoulders).
+  function relation(ptsA,ptsB,aspect,isT) {
+    const P=(pts,i)=>isT?(pts[i][2]>=VIS?{x:pts[i][0]*aspect,y:pts[i][1]}:null):(pts[i].v>=VIS?{x:pts[i].x*aspect,y:pts[i].y}:null);
+    const geo=pts=>{const a=P(pts,11),b=P(pts,12);if(!a||!b)return null;const sw=Math.max(0.02,Math.hypot(a.x-b.x,a.y-b.y));const n=P(pts,0);return {mx:(a.x+b.x)/2,my:(a.y+b.y)/2,sw,face:n?(n.x-(a.x+b.x)/2)/sw:0};};
+    const A=geo(ptsA),B=geo(ptsB);
+    if (!A||!B) return null;
+    return {gap:Math.hypot(A.mx-B.mx,A.my-B.my)/((A.sw+B.sw)/2),face:[A.face,B.face]};
+  }
+  function comparePair(tpl,users,aspect) {
+    const ms=[0,1].map(k=>compare({aspect:tpl.aspect,pts:tpl.people[k]},users[k],aspect));
+    if (!ms[0]||!ms[1]) return null;
+    const rt=relation(tpl.people[0],tpl.people[1],tpl.aspect,true), ru=relation(users[0],users[1],aspect,false);
+    let rel=1, relKey=null, faceOk=true;
+    if (rt&&ru) {
+      rel=clamp01(1-Math.abs(ru.gap-rt.gap)/Math.max(0.8,rt.gap));
+      if (rel<0.75) relKey=ru.gap>rt.gap?'close':'apart';
+      // Facing is only judged for back-to-back, where looking outward is the pose itself.
+      faceOk=getActiveRecipe().svgType!=='pair_back'||[0,1].every(k=>Math.abs(rt.face[k])<0.3||(Math.sign(ru.face[k])===Math.sign(rt.face[k])&&Math.abs(ru.face[k])>0.12));
+    }
+    const score=Math.round(0.4*ms[0].score+0.4*ms[1].score+20*rel*(faceOk?1:0.5));
+    return {score,ms,rel,relKey,faceOk};
+  }
+  let pairFlip=null;
+  function evaluatePair(cands,L,now) {
+    const two=separatedPair(cands);
+    if (!two) {lastMatch=null;return null;}
+    const ordered=[...two].sort((a,b)=>toScreen({x:shoulderX(a),y:0},L).x-toScreen({x:shoulderX(b),y:0},L).x);
+    const aspect=frame.width/frame.height;
+    const users=ordered.map(c=>screenPoints(c.points,L.mirrored));
+    const normal=comparePair(pairTemplate(false),users,aspect), flipped=comparePair(pairTemplate(true),users,aspect);
+    if (!normal&&!flipped) {lastMatch=null;return ordered;}
+    const ns=normal?.score??-1, fs=flipped?.score??-1;
+    if (pairFlip===null) pairFlip=fs>ns; else if (pairFlip&&ns>fs+8) pairFlip=false; else if (!pairFlip&&fs>ns+8) pairFlip=true;
+    const m=(pairFlip?flipped:normal)||normal||flipped;
+    scoreEma=scoreEma===null?m.score:scoreEma*0.75+m.score*0.25;
+    const PW=pairWords[lang], W=cueWords[lang];
+    let cue, worstK=null;
+    const perfect=scoreEma>=85&&m.rel>=0.75&&m.faceOk&&m.ms.every(x=>x.maxDeg<25&&x.coverage>=0.6);
+    if (perfect) cue={key:'perfect',text:W.perfect};
+    else if (m.ms.some(x=>x.coverage<0.6)) cue={key:'more',text:W.more};
+    else if (m.relKey) cue={key:m.relKey,text:PW[m.relKey]};
+    else if (!m.faceOk) cue={key:'face',text:PW.face};
+    else {
+      worstK=m.ms[0].worst.weighted>=m.ms[1].worst.weighted?0:1;
+      const w=m.ms[worstK].worst, u=users[worstK];
+      const side=(u[w.b].x<(u[11].x+u[12].x)/2)?W.left:W.right;
+      const c=limbCue(w,side);
+      cue={key:worstK+c.key,text:(worstK===0?PW.left:PW.right)+c.text};
+    }
+    if (cue.key==='perfect') {perfectSince ||= now; if (now-perfectSince<700) cue={key:'hold',text:W.hold};} else perfectSince=0;
+    let text=lastMatch?.cue;
+    if (!text || (cue.key!==cueKey && (now-cueSince>1200 || cueKey==='perfect' || cueKey==='hold' || cue.key==='hold'))) {cueKey=cue.key;cueSince=now;text=cue.text;}
+    lastMatch={score:Math.round(scoreEma),cue:text,perfect:cue.key==='perfect',pairWorst:worstK===null?null:{k:worstK,seg:m.ms[worstK].worst}};
+    return ordered;
   }
   function renderPair(cands,now) {
     const L=layout();
     if (!L.w||!L.h) return;
     crowd=0;
+    if (getActiveRecipe().judge===false) {
+      // Guide-only pose: no skeleton, no score; the live video stays visible.
+      canvas.hidden=true; lastMatch=null;
+      setStatus(cands.length?11:9); paintCrowd(); return;
+    }
+    canvas.hidden=!visible;
     const pair=evaluatePair(cands,L,now);
     if (visible) {
       const dpr=Math.min(2,window.devicePixelRatio||1);
@@ -335,11 +395,17 @@ const poseTracking = (() => {
       (pair||cands).forEach((c,k)=>{
         const pts=c.points.map(p=>({...toScreen(p,L),ok:(p.visibility??1)>=VIS}));
         line(pts,{stroke:pair?(k===0?'rgba(255,170,200,.95)':'rgba(190,170,255,.95)'):'rgba(255,255,255,.6)',width:3});
+        const pw=lastMatch?.pairWorst;
+        if (pair&&pw&&pw.k===k&&typeof pw.seg.a==='number'&&pw.seg.deg>=20) {
+          const a=L.mirrored?SWAP[pw.seg.a]:pw.seg.a, b=L.mirrored?SWAP[pw.seg.b]:pw.seg.b;
+          if (pts[a].ok&&pts[b].ok) {ctx.strokeStyle='#ff4d7d';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(pts[a].x,pts[a].y);ctx.lineTo(pts[b].x,pts[b].y);ctx.stroke();ctx.lineCap='butt';}
+        }
         for (const i of [11,12,13,14,15,16,23,24,25,26,27,28]) {const d=pts[i];if(!d.ok)continue;ctx.beginPath();ctx.arc(d.x,d.y,3.5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();}
       });
     }
     paintMatch(now);
-    setStatus(pair?10:9);
+    // Two separate people found = a strong signal, show it at once; "step in" waits for 3 frames as usual.
+    if (pair) setStatus(10,true); else setStatus(9);
     paintCrowd();
   }
 
@@ -355,7 +421,7 @@ const poseTracking = (() => {
     const el=document.querySelector('#vfMatchScore');
     if (el) el.textContent=status();
     const pill=document.querySelector('#vfMatchPill');
-    if (pill) pill.classList.toggle('ok',current===5||current===6||current===10);
+    if (pill) pill.classList.toggle('ok',current===5||current===6||current===10||current===11);
   }
   function paintMatch(now) {
     if (!lastMatch || now-lastDom<250) return;
@@ -393,6 +459,7 @@ const poseTracking = (() => {
   function render(cands, now) {
     const L=layout();
     if (!L.w||!L.h) return;
+    canvas.hidden=!visible;
     if (!visible) {crowd=cands.length;analyseOnly(L,now);return;}
     const dpr=Math.min(2,window.devicePixelRatio||1);
     if (canvas.width!==Math.round(L.w*dpr)||canvas.height!==Math.round(L.h*dpr)) {canvas.width=Math.round(L.w*dpr);canvas.height=Math.round(L.h*dpr);}
@@ -484,8 +551,8 @@ const poseTracking = (() => {
       runningMode:'VIDEO',numPoses:MAX_POSES,
       minPoseDetectionConfidence:0.4,minPosePresenceConfidence:0.4,minTrackingConfidence:0.4
     });
-    try {const d=await PoseLandmarker.createFromOptions(files,opts('pose-full','GPU'));engine='gpu';return d;}
-    catch {const d=await PoseLandmarker.createFromOptions(files,opts('pose-lite','CPU'));engine='cpu';return d;}
+    try {const d=await PoseLandmarker.createFromOptions(files,opts('pose-full','GPU'));engine='gpu';visionApi={PoseLandmarker,files,model:'assets/pose-engine/pose-full.task',delegate:'GPU'};return d;}
+    catch {const d=await PoseLandmarker.createFromOptions(files,opts('pose-lite','CPU'));engine='cpu';visionApi={PoseLandmarker,files,model:'assets/pose-engine/pose-lite.task',delegate:'CPU'};return d;}
   }
 
   stage.addEventListener('click',e=>{
@@ -499,7 +566,7 @@ const poseTracking = (() => {
     cancelAnimationFrame(rafId);
     if (vfcId && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(vfcId);
     rafId=vfcId=0;
-    current=null;pending=null;subject=null;tapPoint=null;lockedByTap=false;crowd=0;lastMatch=null;cueKey='';
+    current=null;pending=null;subject=null;tapPoint=null;lockedByTap=false;crowd=0;lastMatch=null;cueKey='';pairFlip=null;lastPair=null;
     ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
     canvas.hidden=true;
     paintCrowd();
@@ -537,7 +604,21 @@ const poseTracking = (() => {
             const result=detector.detectForVideo(frame,now);
             cost=cost*0.8+(performance.now()-t0)*0.2;
             const cands=(result.landmarks||[]).map(points=>({points,box:boxOf(points)})).filter(c=>c.box);
-            if (getActiveRecipe().people===2) {subject=null;renderPair(cands,now);schedule();return;}
+            if (getActiveRecipe().people===2) {
+              subject=null;
+              let pc=cands;
+              ensureSplitDetector();
+              dbg={main:cands.length,mainSeparated:!!separatedPair(cands),splitReady:!!splitDetector,split:null};
+              if (!separatedPair(cands) && splitDetector) {
+                const found=splitDetect(0.5);
+                dbg.split=found.length; if (separatedPair(found)) pc=found;
+                cost=cost*0.8+(performance.now()-t0)*0.2;
+              }
+              // A frame where one of the two is missed keeps the last good pair for 1.2 s (no flicker on slow phones).
+              if (separatedPair(pc)) lastPair={cands:pc,at:now};
+              else if (lastPair && now-lastPair.at<1200) pc=lastPair.cands;
+              renderPair(pc,now);schedule();return;
+            }
             const chosen=pickSubject(cands,now);
             if (chosen) updateSubject(chosen,now);
             else if (subject) subject.cand=null;
@@ -550,7 +631,7 @@ const poseTracking = (() => {
     } catch {if(id===generation){stop();setStatus(7,true);}}
   }
   return {
-    start,stop,status,setVisible,engine:()=>engine,
+    start,stop,status,setVisible,engine:()=>engine,debug:()=>dbg,
     match:()=>lastMatch&&current!==null?{score:lastMatch.score,cue:lastMatch.cue,perfect:!!lastMatch.perfect}:null,
     subjectCenter:()=>subject?{x:+subject.box.cx.toFixed(2),y:+subject.box.cy.toFixed(2),people:crowd}:null
   };
