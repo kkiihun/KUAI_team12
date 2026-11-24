@@ -13,7 +13,9 @@ const icons = {
   helper: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.3a3.5 3.5 0 0 1 0 6.4M18.5 14.2A6.5 6.5 0 0 1 21.5 20',
   trash: 'M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7',
   eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
-  eyeoff: 'M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 3.9M6.6 6.6C3.9 8.3 2 12 2 12s3.6 7 10 7c1.9 0 3.5-.6 4.9-1.4M9.9 9.9a3 3 0 0 0 4.2 4.2'
+  eyeoff: 'M3 3l18 18M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 3.9M6.6 6.6C3.9 8.3 2 12 2 12s3.6 7 10 7c1.9 0 3.5-.6 4.9-1.4M9.9 9.9a3 3 0 0 0 4.2 4.2',
+  tools: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z',
+  bolt: 'M13 2 4 14h7l-1 8 9-12h-7l1-8z'
 };
 
 const brandLogo = new Image();
@@ -44,6 +46,7 @@ const director = {
   opacity: 72,
   showGrid: true,
   showGuide: true,
+  autoCamera: true,
   skipIntro: false,
   helperOpen: false,
   tiltDeg: 0,
@@ -63,6 +66,7 @@ try {
   savedSpots = JSON.parse(localStorage.getItem('pilk-v5-saved') || '[]').filter(id => spots.some(s => s.id === id));
   claimedCoupons = JSON.parse(localStorage.getItem('pilk-v5-coupons') || '[]');
   director.showGuide = localStorage.getItem('pilk-v5-guide') !== '0';
+  director.autoCamera = localStorage.getItem('pilk-v5-auto-cam') !== '0';
   director.skipIntro = localStorage.getItem('pilk-v5-skip-intro') === '1';
 } catch {}
 
@@ -91,13 +95,17 @@ function hydrate(root = document) {
 const validTabs = ['camera', 'nearby', 'spots', 'saved'];
 function switchTab(tab, pushHash = true) {
   const previousTab = activeTab;
-  if (tab !== "camera") { cancelCountdown(); stopCamera(); }
+  if (tab !== "camera") { setToolsMenuOpen(false); cancelCountdown(); stopCamera(); }
   if (tab === 'spots') tab = 'nearby';
   if (!validTabs.includes(tab)) tab = 'camera';
   activeTab = tab;
+  document.body.dataset.activeTab = tab;
+  syncChromeAppearance();
 
   $$('.tab-page').forEach(p => p.classList.toggle('active', p.dataset.page === tab));
   $$('.btab, .dtab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  const shutter = $('#shutterBtn');
+  if (shutter) shutter.setAttribute('aria-label', tab === 'camera' ? 'Capture' : t('tabCam'));
   $('.pages-shell').classList.toggle('wide-mode', tab === 'nearby');
 
   if (tab === 'nearby') {
@@ -160,7 +168,6 @@ function computeCoaching() {
 
 function updateCameraUI() {
   const spot = getActiveSpot();
-  const sText = spot[lang] || spot.ko;
   const r = getActiveRecipe();
   const rt = r[lang] || r.ko;
   const coaching = computeCoaching();
@@ -186,10 +193,40 @@ function updateCameraUI() {
   overlay.style.transform = `scale(${distScale}) translateY(${distY})`;
   overlay.hidden = !director.showGuide;
   const guideBtn = $('#guideToggleBtn');
-  guideBtn.innerHTML = icon(director.showGuide ? 'eye' : 'eyeoff');
+  $('#guideToggleIcon').innerHTML = icon(director.showGuide ? 'eye' : 'eyeoff');
   guideBtn.setAttribute('aria-pressed', String(director.showGuide));
   guideBtn.setAttribute('aria-label', t(director.showGuide ? 'guideOn' : 'guideOff'));
   guideBtn.classList.toggle('is-off', !director.showGuide);
+  const guideState = $('#guideToggleState');
+  if (guideState) {
+    guideState.textContent = director.showGuide ? 'ON' : 'OFF';
+    guideState.classList.toggle('is-on', director.showGuide);
+  }
+  const isFront = director.facingMode === 'user';
+  $('#switchFacingBtn').classList.toggle('is-front', isFront);
+  const facingState = $('#switchFacingState');
+  if (facingState) {
+    facingState.textContent = t(isFront ? 'camFront' : 'camRear');
+    facingState.classList.toggle('is-on', isFront);
+  }
+  const isLiveCam = Boolean(director.stream);
+  $('#toggleCamBtn').classList.toggle('active', isLiveCam);
+  $('#toggleCamLabel').textContent = t(isLiveCam ? 'dockCamOff' : 'dockCamOn');
+  const camState = $('#toggleCamState');
+  if (camState) {
+    camState.textContent = isLiveCam ? 'ON' : 'OFF';
+    camState.classList.toggle('is-on', isLiveCam);
+  }
+  const autoCamBtn = $('#autoCamToggleBtn');
+  if (autoCamBtn) {
+    autoCamBtn.setAttribute('aria-pressed', String(director.autoCamera));
+    autoCamBtn.classList.toggle('is-off', !director.autoCamera);
+  }
+  const autoCamState = $('#autoCamState');
+  if (autoCamState) {
+    autoCamState.textContent = director.autoCamera ? 'ON' : 'OFF';
+    autoCamState.classList.toggle('is-on', director.autoCamera);
+  }
   $('#skeletonToggle').checked = director.showGuide;
   $('#skipIntroToggle').checked = director.skipIntro;
   overlay.style.opacity = director.mode === 'B' ? Math.max(0.22, director.opacity / 220) : director.opacity / 100;
@@ -197,9 +234,12 @@ function updateCameraUI() {
   $('#vfGrid').classList.toggle('hidden', poseExample || !director.showGrid);
   $('#vfFootLine').classList.toggle('hidden', poseExample || !director.showGrid || ['cheek','shadow','high05','pair_heart','pair_back'].includes(r.svgType));
 
-  $('#vfMatchScore').textContent = poseExample ? ({ko:'구도 예시',en:'Example',ja:'構図例'})[lang] : poseTracking.status() || `${coaching.score}%`;
-  $('#vfMatchPill').classList.toggle('warn', coaching.score < 85);
-  $('#vfSpotName').textContent = poseExample ? (fullBody ? (spots.find(s => s.id === 'gyeongbok')[lang][0]) : t('tabNearby')) : director.customPhotoUrl ? (lang === 'ko' ? '내 사진' : lang === 'ja' ? '自分の写真' : 'My Photo') : sText[0];
+  const matchPill = $('#vfMatchPill');
+  matchPill.hidden = poseExample;
+  if (!poseExample) {
+    $('#vfMatchScore').textContent = poseTracking.status() || `${coaching.score}%`;
+    matchPill.classList.toggle('warn', coaching.score < 85);
+  }
   const vibe = $('#vfVibe');
   vibe.hidden = poseExample;
   vibe.style.setProperty('--vibe', coaching.score + '%');
@@ -516,6 +556,10 @@ function cancelPosePreview() {
 function beginPosePreview() {
   cancelPosePreview();
   if (activeTab !== 'camera' || document.hidden || director.customPhotoUrl || !director.posePreview) return;
+  if (!director.autoCamera) {
+    if (director.stream) updateCameraUI();
+    return;
+  }
   if (director.skipIntro) {
     // Straight to the live camera (keep a running stream when only the pose changed).
     if (director.stream) { updateCameraUI(); return; }
@@ -586,7 +630,7 @@ async function toggleCamera() {
 
 async function switchCameraFacing() {
   director.facingMode = director.facingMode === 'environment' ? 'user' : 'environment';
-  $('#switchFacingBtn').classList.toggle('is-front', director.facingMode === 'user');
+  updateCameraUI();
   toast(director.facingMode === 'user' ? t('toastFrontCam') : t('toastRearCam'));
   if (director.stream) {
     // Stop active tracks first so iOS Safari cleanly switches lenses without NotReadableError
@@ -798,12 +842,19 @@ function showHowTo() {
 }
 
 const themeColors = { pink: '#fff5f3', blue: '#f2f7ff', dark: '#19151d' };
+let currentTheme = 'pink';
+function syncChromeAppearance() {
+  const logo = $('.brand-logo');
+  if (logo) logo.src = currentTheme === 'dark' ? 'assets/brand/pilk-logo-dark.png' : 'assets/brand/pilk-logo.png';
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.content = themeColors[currentTheme] || themeColors.pink;
+}
 function applyTheme(name) {
   const theme = themeColors[name] ? name : 'pink';
+  currentTheme = theme;
   if (theme === 'pink') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', theme);
-  document.querySelector('meta[name="theme-color"]').content = themeColors[theme];
-  $('.brand-logo').src = theme === 'dark' ? 'assets/brand/pilk-logo-dark.png' : 'assets/brand/pilk-logo.png';
+  syncChromeAppearance();
   $$('[data-theme-pick]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePick === theme)));
   return theme;
 }
@@ -815,7 +866,7 @@ function renderAll() {
   $('#howtoBtn').setAttribute('aria-label', howtoLabel);
   $('#howtoBtn').title = howtoLabel;
   $('#howtoRowLabel').textContent = howtoLabel;
-  for (const [id, key] of [['guideToggleBtn', 'btnGuide'], ['switchFacingBtn', 'btnSwitch'], ['helperModeBtn', 'btnHelper']]) {
+  for (const [id, key] of [['vfToolsToggleBtn', 'toolsMenu'], ['speakCueBtn', 'dockVoice'], ['guideToggleBtn', 'btnGuide'], ['switchFacingBtn', 'btnSwitch'], ['helperModeBtn', 'btnHelper']]) {
     $('#' + id).title = t(key);
     if (id !== 'guideToggleBtn') $('#' + id).setAttribute('aria-label', t(key));
   }
@@ -838,8 +889,40 @@ function renderAll() {
   $(`#lang-${c}`).onclick = () => { lang = c; persist('pilk-v5-lang', c); renderAll(); };
 });
 
-$('#toggleCamBtn').onclick = toggleCamera;
-$('#switchFacingBtn').onclick = switchCameraFacing;
+function setToolsMenuOpen(open) {
+  const menu = $('#vfToolsMenu');
+  const backdrop = $('#vfToolsBackdrop');
+  const btn = $('#vfToolsToggleBtn');
+  if (!menu || !btn) return;
+  menu.hidden = !open;
+  if (backdrop) backdrop.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+  btn.classList.toggle('is-open', open);
+}
+
+$('#vfToolsToggleBtn').onclick = e => {
+  e.stopPropagation();
+  setToolsMenuOpen($('#vfToolsMenu').hidden);
+};
+if ($('#vfToolsCloseBtn')) $('#vfToolsCloseBtn').onclick = () => setToolsMenuOpen(false);
+if ($('#vfToolsBackdrop')) $('#vfToolsBackdrop').onclick = () => setToolsMenuOpen(false);
+document.addEventListener('click', e => {
+  const menu = $('#vfToolsMenu');
+  if (menu && !menu.hidden && !e.target.closest('#vfToolsMenu') && !e.target.closest('#vfToolsWrap')) setToolsMenuOpen(false);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') setToolsMenuOpen(false);
+});
+
+$('#toggleCamBtn').onclick = () => { setToolsMenuOpen(false); toggleCamera(); };
+$('#autoCamToggleBtn').onclick = () => {
+  director.autoCamera = !director.autoCamera;
+  persist('pilk-v5-auto-cam', director.autoCamera ? '1' : '0');
+  if (!director.autoCamera) cancelPosePreview();
+  updateCameraUI();
+  toast(t(director.autoCamera ? 'autoCamOn' : 'autoCamOff'));
+};
+$('#switchFacingBtn').onclick = () => { setToolsMenuOpen(false); switchCameraFacing(); };
 let countdownInterval = null;
 function cancelCountdown() {
   clearInterval(countdownInterval);
@@ -849,6 +932,7 @@ function cancelCountdown() {
 $('#timerDelay').onchange = cancelCountdown;
 document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelCountdown(); stopCamera(); } });
 $('#shutterBtn').onclick = () => {
+  if (activeTab !== 'camera') { switchTab('camera'); return; }
   cancelPosePreview();
   if (countdownInterval !== null) return cancelCountdown();
   const delay = Number($('#timerDelay').value);
@@ -866,9 +950,9 @@ $('#shutterBtn').onclick = () => {
 };
 $('#exportStoryBtn').onclick = () => captureViewfinder(true);
 $('#speakCueBtn').onclick = speakCoaching;
-$('#vfScanBtn').onclick = () => runBackgroundScan(true);
+$('#vfScanBtn').onclick = () => { setToolsMenuOpen(false); runBackgroundScan(true); };
 $('#rescanBtn').onclick = () => runBackgroundScan(true);
-$('#helperModeBtn').onclick = () => { director.helperOpen = !director.helperOpen; updateCameraUI(); };
+$('#helperModeBtn').onclick = () => { setToolsMenuOpen(false); director.helperOpen = !director.helperOpen; updateCameraUI(); };
 $('#closeHelperBtn').onclick = () => { director.helperOpen = false; updateCameraUI(); };
 
 $$('.mseg').forEach(b => {
@@ -914,6 +998,7 @@ poseTracking.setVisible(director.showGuide);
 $('#uploadSceneInput').onchange = e => {
   const file = e.target.files?.[0];
   if (!file) return;
+  if (activeTab !== 'camera') switchTab('camera');
   if (director.customPhotoUrl) URL.revokeObjectURL(director.customPhotoUrl);
   director.customPhotoUrl = URL.createObjectURL(file);
   stopCamera();

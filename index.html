@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Quicksand:wght@600;700&family=Zen+Maru+Gothic:wght@500;700&family=Noto+Sans+JP:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/leaflet/leaflet.css">
   <script>(function(){try{var th=localStorage.getItem("pilk-v5-theme");if(th==="blue"||th==="dark")document.documentElement.setAttribute("data-theme",th);}catch(e){}})();</script>
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=39">
 </head>
 <body>
 
@@ -62,18 +62,14 @@
         <!-- Minimal Top Overlay -->
         <div class="vf-top">
           <div class="vf-top-left">
-            <span class="match-pill" id="vfMatchPill"><strong id="vfMatchScore">100%</strong></span>
-            <button type="button" class="spot-pill" data-tab="spots">📍 <span id="vfSpotName">경복궁</span></button>
+            <span class="match-pill" id="vfMatchPill" hidden><strong id="vfMatchScore">100%</strong></span>
           </div>
           <div class="vf-top-right">
-            <button type="button" class="scan-pill-btn" id="vfScanBtn">
-              <span data-icon="scan"></span><span data-t="scanAction"></span>
-            </button>
-            <button type="button" class="glass-btn" id="guideToggleBtn" aria-pressed="true"><span data-icon="eye"></span></button>
-            <button type="button" class="glass-btn" id="switchFacingBtn" aria-label="Switch front/rear camera">
-              <span data-icon="flipcam"></span>
-            </button>
-            <button type="button" class="glass-btn" id="helperModeBtn" aria-label="10s Helper Card"><span data-icon="helper"></span></button>
+            <div class="vf-tools-wrap" id="vfToolsWrap">
+              <button type="button" class="vf-tools-btn" id="vfToolsToggleBtn" aria-label="기능" aria-haspopup="dialog" aria-expanded="false" aria-controls="vfToolsMenu">
+                <span data-icon="tools"></span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -83,7 +79,12 @@
         <!-- Single-Line Live Cue -->
         <div class="vf-cue">
           <div class="vf-vibe" id="vfVibe"><span class="vf-vibe-label" data-t="vibeLabel"></span><span class="vf-vibe-bar"><i></i></span><b id="vfVibeValue"></b></div>
-          <p id="vfDirText"></p>
+          <div class="vf-cue-row">
+            <p id="vfDirText"></p>
+            <button type="button" class="vf-voice-btn" id="speakCueBtn" aria-label="음성">
+              <span data-icon="volume"></span>
+            </button>
+          </div>
         </div>
 
         <!-- 10s Helper Mode Full Overlay -->
@@ -95,49 +96,67 @@
         </div>
       </div>
 
-      <!-- Integrated Pose Strip (dark sleek bar) -->
+      <!-- Integrated Pose Strip -->
       <div class="dark-pose-strip" id="poseStrip"></div>
-
-      <!-- Integrated Shutter Bar -->
-      <div class="shutter-bar">
-        <label class="shutter-btn-side" for="uploadSceneInput">
-          <span data-icon="upload"></span><small data-t="dockPhoto"></small>
-        </label>
-        <input type="file" id="uploadSceneInput" accept="image/jpeg,image/png,image/webp" class="sr-only">
-
-        <button type="button" class="shutter-btn-side" id="toggleCamBtn">
-          <span data-icon="camera"></span><small id="toggleCamLabel" data-t="dockCamOn"></small>
-        </button>
-
-        <button type="button" class="shutter-circle" id="shutterBtn" aria-label="Capture"><span></span></button>
-
-        <button type="button" class="shutter-btn-side" id="exportStoryBtn">
-          <span data-icon="spark"></span><small data-t="dockStory"></small>
-        </button>
-
-        <button type="button" class="shutter-btn-side" id="speakCueBtn">
-          <span data-icon="volume"></span><small data-t="dockVoice"></small>
-        </button>
-      </div>
     </div>
 
-    <!-- ONE Single Minimal Utility Bar Below Camera -->
-    <aside class="studio-panel"><div class="guide-panel"><img id="guidePhoto" alt=""><h1 id="guideTitle"></h1><ol id="guideSteps"></ol></div>
-    <div class="quick-bar">
-      <div class="mini-seg" role="tablist">
-        <button type="button" class="mseg selected" data-mode="A" data-t="modeA"></button>
-        <button type="button" class="mseg" data-mode="B" data-t="modeB"></button>
-        <button type="button" class="mseg" data-mode="C" data-t="modeC"></button>
+    <!-- Unified Settings & Pose Guide Sheet (opened from top-right gear button) -->
+    <div class="vf-tools-backdrop" id="vfToolsBackdrop" hidden></div>
+    <div class="vf-tools-menu" id="vfToolsMenu" role="dialog" aria-modal="true" hidden>
+      <div class="vf-tools-head">
+        <span class="vf-tools-title" data-t="toolsMenu"></span>
+        <button type="button" class="vf-tools-close" id="vfToolsCloseBtn" aria-label="Close">✕</button>
       </div>
-      <div class="quick-toggles"><label class="qchip"><span data-t="timer"></span> <select id="timerDelay"><option value="0" data-t="off"></option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select></label>
-        <button type="button" class="qchip active" id="btnFlip180"><span data-t="flipShort"></span></button>
-        <button type="button" class="qhelp" id="flipHelpBtn" aria-label="What is Flip Phone 180°?">?</button>
-        <button type="button" class="qchip active" id="btnFrontFoot"><span data-t="footShort"></span></button>
-        <button type="button" class="qchip" id="btnLensCycle">1×</button>
-        <button type="button" class="qchip" id="btnDistCycle">최적</button>
+
+      <div class="vf-tools-actions">
+        <button type="button" class="vf-tool-item" id="toggleCamBtn">
+          <span class="vf-tool-icon" data-icon="camera"></span>
+          <span class="vf-tool-label" id="toggleCamLabel" data-t="dockCamOn"></span>
+          <span class="vf-tool-state" id="toggleCamState">OFF</span>
+        </button>
+        <button type="button" class="vf-tool-item" id="autoCamToggleBtn" aria-pressed="true">
+          <span class="vf-tool-icon" data-icon="bolt"></span>
+          <span class="vf-tool-label" data-t="menuAutoCam"></span>
+          <span class="vf-tool-state" id="autoCamState">ON</span>
+        </button>
+        <button type="button" class="vf-tool-item is-accent" id="vfScanBtn">
+          <span class="vf-tool-icon" data-icon="scan"></span>
+          <span class="vf-tool-label" data-t="btnScan"></span>
+        </button>
+        <button type="button" class="vf-tool-item" id="guideToggleBtn" aria-pressed="true">
+          <span class="vf-tool-icon" id="guideToggleIcon" data-icon="eye"></span>
+          <span class="vf-tool-label" data-t="menuGuide"></span>
+          <span class="vf-tool-state" id="guideToggleState">ON</span>
+        </button>
+        <button type="button" class="vf-tool-item" id="switchFacingBtn" aria-label="Switch front/rear camera">
+          <span class="vf-tool-icon" data-icon="flipcam"></span>
+          <span class="vf-tool-label" data-t="menuSwitch"></span>
+          <span class="vf-tool-state" id="switchFacingState">후면</span>
+        </button>
+        <button type="button" class="vf-tool-item" id="helperModeBtn" aria-label="10s Helper Card">
+          <span class="vf-tool-icon" data-icon="helper"></span>
+          <span class="vf-tool-label" data-t="menuHelper"></span>
+        </button>
       </div>
+
+      <aside class="studio-panel">
+        <div class="guide-panel"><img id="guidePhoto" alt=""><h1 id="guideTitle"></h1><ol id="guideSteps"></ol></div>
+        <div class="quick-bar">
+          <div class="mini-seg" role="tablist">
+            <button type="button" class="mseg selected" data-mode="A" data-t="modeA"></button>
+            <button type="button" class="mseg" data-mode="B" data-t="modeB"></button>
+            <button type="button" class="mseg" data-mode="C" data-t="modeC"></button>
+          </div>
+          <div class="quick-toggles"><label class="qchip"><span data-t="timer"></span> <select id="timerDelay"><option value="0" data-t="off"></option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select></label>
+            <button type="button" class="qchip active" id="btnFlip180"><span data-t="flipShort"></span></button>
+            <button type="button" class="qhelp" id="flipHelpBtn" aria-label="What is Flip Phone 180°?">?</button>
+            <button type="button" class="qchip active" id="btnFrontFoot"><span data-t="footShort"></span></button>
+            <button type="button" class="qchip" id="btnLensCycle">1×</button>
+            <button type="button" class="qchip" id="btnDistCycle">최적</button>
+          </div>
+        </div>
+      </aside>
     </div>
-    </aside>
   </section>
 
   <!-- ==================== PAGE 2: NEARBY & LOCAL COUPONS ==================== -->
@@ -252,18 +271,31 @@
 
 </main>
 
-<!-- FIXED BOTTOM TAB BAR (MOBILE) -->
-<nav class="bottom-tabs" aria-label="App Navigation">
-  <button type="button" class="btab active" data-tab="camera">
-    <span data-icon="camera"></span><span data-t="tabCam"></span>
+<!-- UNIFIED SINGLE-ROW BOTTOM DOCK (NAV + CAMERA) -->
+<nav class="app-dock" id="appDock" aria-label="App Navigation">
+  <button type="button" class="dock-btn btab" data-tab="nearby">
+    <span class="dock-ico tab-icon-wrap"><span data-icon="pin"></span><i class="notif-dot hidden" id="nearbyDot"></i></span>
+    <small data-t="tabNearby"></small>
   </button>
-  <button type="button" class="btab" data-tab="nearby">
-    <span class="tab-icon-wrap"><span data-icon="pin"></span><i class="notif-dot hidden" id="nearbyDot"></i></span>
-    <span data-t="tabNearby"></span>
+
+  <label class="dock-btn" for="uploadSceneInput">
+    <span class="dock-ico" data-icon="upload"></span>
+    <small data-t="dockPhoto"></small>
+  </label>
+  <input type="file" id="uploadSceneInput" accept="image/jpeg,image/png,image/webp" class="sr-only">
+
+  <button type="button" class="shutter-circle" id="shutterBtn" aria-label="Capture">
+    <span class="shutter-core"><i class="shutter-cam-ico" data-icon="camera"></i></span>
   </button>
-  <button type="button" class="btab" data-tab="saved">
-    <span class="tab-icon-wrap"><span data-icon="bookmark"></span><b class="tab-badge hidden" id="saveCount">0</b></span>
-    <span data-t="tabSaved"></span>
+
+  <button type="button" class="dock-btn" id="exportStoryBtn">
+    <span class="dock-ico" data-icon="spark"></span>
+    <small data-t="dockStory"></small>
+  </button>
+
+  <button type="button" class="dock-btn btab" data-tab="saved">
+    <span class="dock-ico tab-icon-wrap"><span data-icon="bookmark"></span><b class="tab-badge hidden" id="saveCount">0</b></span>
+    <small data-t="tabSaved"></small>
   </button>
 </nav>
 
@@ -275,7 +307,7 @@
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="spots-data.js?v=14"></script>
-<script src="pilk-data.js?v=22"></script>
+<script src="pilk-data.js?v=24"></script>
 <script src="assets/leaflet/leaflet.js"></script>
 <script src="explore-map.js?v=14"></script>
 <script src="poses.js"></script>
@@ -284,6 +316,6 @@
 <script src="pose-templates.js?v=1"></script>
 <script src="pose-tracking.js?v=19"></script>
 <script src="scene-meter.js?v=17"></script>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=34"></script>
 </body>
 </html>
