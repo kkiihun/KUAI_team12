@@ -67,6 +67,10 @@
             <span class="match-pill" id="vfMatchPill" hidden><strong id="vfMatchScore">100%</strong></span>
           </div>
           <div class="vf-top-right">
+            <button type="button" class="vf-auto-btn" id="vfAutoBtn" aria-pressed="false">AUTO</button>
+            <button type="button" class="vf-tools-btn vf-flip-btn" id="switchFacingBtn" aria-label="Switch front/rear camera">
+              <span data-icon="flipcam"></span>
+            </button>
             <div class="vf-tools-wrap" id="vfToolsWrap">
               <button type="button" class="vf-tools-btn" id="vfToolsToggleBtn" aria-label="기능" aria-haspopup="dialog" aria-expanded="false" aria-controls="vfToolsMenu">
                 <span data-icon="tools"></span>
@@ -111,54 +115,87 @@
         <button type="button" class="vf-tools-close" id="vfToolsCloseBtn" aria-label="Close">✕</button>
       </div>
 
-      <div class="vf-tools-actions">
-        <button type="button" class="vf-tool-item" id="toggleCamBtn">
-          <span class="vf-tool-icon" data-icon="camera"></span>
-          <span class="vf-tool-label" id="toggleCamLabel" data-t="dockCamOn"></span>
-          <span class="vf-tool-state" id="toggleCamState">OFF</span>
-        </button>
-        <button type="button" class="vf-tool-item" id="autoCamToggleBtn" aria-pressed="true">
-          <span class="vf-tool-icon" data-icon="bolt"></span>
-          <span class="vf-tool-label" data-t="menuAutoCam"></span>
-          <span class="vf-tool-state" id="autoCamState">ON</span>
-        </button>
-        <button type="button" class="vf-tool-item is-accent" id="vfScanBtn">
-          <span class="vf-tool-icon" data-icon="scan"></span>
-          <span class="vf-tool-label" data-t="btnScan"></span>
-        </button>
-        <button type="button" class="vf-tool-item" id="guideToggleBtn" aria-pressed="true">
-          <span class="vf-tool-icon" id="guideToggleIcon" data-icon="eye"></span>
-          <span class="vf-tool-label" data-t="menuGuide"></span>
-          <span class="vf-tool-state" id="guideToggleState">ON</span>
-        </button>
-        <button type="button" class="vf-tool-item" id="switchFacingBtn" aria-label="Switch front/rear camera">
-          <span class="vf-tool-icon" data-icon="flipcam"></span>
-          <span class="vf-tool-label" data-t="menuSwitch"></span>
-          <span class="vf-tool-state" id="switchFacingState">후면</span>
-        </button>
-        <button type="button" class="vf-tool-item" id="helperModeBtn" aria-label="10s Helper Card">
-          <span class="vf-tool-icon" data-icon="helper"></span>
-          <span class="vf-tool-label" data-t="menuHelper"></span>
-        </button>
+      <div class="vf-sheet-tabs" role="tablist">
+        <button type="button" role="tab" class="vf-sheet-tab" data-sheet-pane="shoot" aria-selected="true" data-t="sheetShoot"></button>
+        <button type="button" role="tab" class="vf-sheet-tab" data-sheet-pane="settings" aria-selected="false" data-t="sheetSettings"></button>
       </div>
 
-      <aside class="studio-panel">
-        <div class="guide-panel"><img id="guidePhoto" alt=""><h1 id="guideTitle"></h1><ol id="guideSteps"></ol></div>
-        <div class="quick-bar">
-          <div class="mini-seg" role="tablist">
-            <button type="button" class="mseg selected" data-mode="A" data-t="modeA"></button>
-            <button type="button" class="mseg" data-mode="B" data-t="modeB"></button>
-            <button type="button" class="mseg" data-mode="C" data-t="modeC"></button>
-          </div>
-          <div class="quick-toggles"><label class="qchip"><span data-t="timer"></span> <select id="timerDelay"><option value="0" data-t="off"></option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select></label>
-            <button type="button" class="qchip active" id="btnFlip180"><span data-t="flipShort"></span></button>
-            <button type="button" class="qhelp" id="flipHelpBtn" aria-label="What is Flip Phone 180°?">?</button>
-            <button type="button" class="qchip active" id="btnFrontFoot"><span data-t="footShort"></span></button>
-            <button type="button" class="qchip" id="btnLensCycle">1×</button>
-            <button type="button" class="qchip" id="btnDistCycle">최적</button>
-          </div>
+      <div class="vf-sheet-pane" data-pane="shoot">
+        <div class="vf-tools-actions">
+          <button type="button" class="vf-tool-item is-accent" id="vfScanBtn">
+            <span class="vf-tool-icon" data-icon="scan"></span>
+            <span class="vf-tool-label" data-t="btnScan"></span>
+          </button>
+          <button type="button" class="vf-tool-item" id="helperModeBtn" aria-label="10s Helper Card">
+            <span class="vf-tool-icon" data-icon="helper"></span>
+            <span class="vf-tool-label" data-t="menuHelper"></span>
+          </button>
         </div>
-      </aside>
+
+        <aside class="studio-panel">
+          <div class="guide-panel"><img id="guidePhoto" alt=""><h1 id="guideTitle"></h1><ol id="guideSteps"></ol></div>
+          <div class="quick-bar">
+            <div class="mini-seg" role="tablist">
+              <button type="button" class="mseg selected" data-mode="A" data-t="modeA"></button>
+              <button type="button" class="mseg" data-mode="B" data-t="modeB"></button>
+              <button type="button" class="mseg" data-mode="C" data-t="modeC"></button>
+            </div>
+            <div class="quick-toggles"><label class="qchip"><span data-t="timer"></span> <select id="timerDelay"><option value="0" data-t="off"></option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select></label>
+              <button type="button" class="qchip active" id="btnFlip180"><span data-t="flipShort"></span></button>
+              <button type="button" class="qhelp" id="flipHelpBtn" aria-label="What is Flip Phone 180°?">?</button>
+              <button type="button" class="qchip active" id="btnFrontFoot"><span data-t="footShort"></span></button>
+              <button type="button" class="qchip" id="btnLensCycle">1×</button>
+              <button type="button" class="qchip" id="btnDistCycle">최적</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="vf-sheet-pane" data-pane="settings" hidden>
+        <div class="vf-tools-actions">
+          <button type="button" class="vf-tool-item" id="autoCamToggleBtn" aria-pressed="true">
+            <span class="vf-tool-icon" data-icon="bolt"></span>
+            <span class="vf-tool-label" data-t="menuAutoCam"></span>
+            <span class="vf-tool-state" id="autoCamState">ON</span>
+          </button>
+          <button type="button" class="vf-tool-item" id="guideToggleBtn" aria-pressed="true">
+            <span class="vf-tool-icon" id="guideToggleIcon" data-icon="eye"></span>
+            <span class="vf-tool-label" data-t="menuGuide"></span>
+            <span class="vf-tool-state" id="guideToggleState">ON</span>
+          </button>
+        </div>
+
+        <div class="settings-card vf-settings-card">
+          <div class="setting-row theme-row">
+            <span data-t="themeLabel"></span>
+            <div class="theme-swatches" role="group">
+              <button type="button" class="theme-swatch" data-theme-pick="pink"><i></i><span data-t="themePink"></span></button>
+              <button type="button" class="theme-swatch" data-theme-pick="blue"><i></i><span data-t="themeBlue"></span></button>
+              <button type="button" class="theme-swatch" data-theme-pick="dark"><i></i><span data-t="themeDark"></span></button>
+            </div>
+          </div>
+          <label class="setting-row">
+            <span data-t="opacityLabel"></span>
+            <div class="range-wrap">
+              <input type="range" id="opacitySlider" min="15" max="100" value="72">
+              <b id="opacityVal">72%</b>
+            </div>
+          </label>
+          <label class="setting-row">
+            <span data-t="autoShootSetting"></span>
+            <input type="checkbox" id="autoShootToggle">
+          </label>
+          <label class="setting-row">
+            <span data-t="skipIntroSetting"></span>
+            <input type="checkbox" id="skipIntroToggle">
+          </label>
+          <label class="setting-row">
+            <span data-t="gridLabel"></span>
+            <input type="checkbox" id="gridToggle" checked>
+          </label>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -166,9 +203,6 @@
   <section class="tab-page" id="page-nearby" data-page="nearby">
     <div class="page-head">
       <h1 data-t="nearbyHeading" data-eyebrow="Explore"></h1>
-      <button type="button" class="btn primary sm" id="rescanBtn">
-        <span data-icon="scan"></span><span data-t="rescanBtn"></span>
-      </button>
     </div>
 
     <div class="current-spot-banner">
@@ -229,37 +263,6 @@
     </div>
 
     <div id="savedContent"></div>
-
-    <div class="settings-card">
-      <h3 data-t="settingsTitle"></h3>
-      <div class="setting-row theme-row">
-        <span data-t="themeLabel"></span>
-        <div class="theme-swatches" role="group">
-          <button type="button" class="theme-swatch" data-theme-pick="pink"><i></i><span data-t="themePink"></span></button>
-          <button type="button" class="theme-swatch" data-theme-pick="blue"><i></i><span data-t="themeBlue"></span></button>
-          <button type="button" class="theme-swatch" data-theme-pick="dark"><i></i><span data-t="themeDark"></span></button>
-        </div>
-      </div>
-      <label class="setting-row">
-        <span data-t="opacityLabel"></span>
-        <div class="range-wrap">
-          <input type="range" id="opacitySlider" min="15" max="100" value="72">
-          <b id="opacityVal">72%</b>
-        </div>
-      </label>
-      <label class="setting-row">
-        <span data-t="skeletonSetting"></span>
-        <input type="checkbox" id="skeletonToggle" checked>
-      </label>
-      <label class="setting-row">
-        <span data-t="skipIntroSetting"></span>
-        <input type="checkbox" id="skipIntroToggle">
-      </label>
-      <label class="setting-row">
-        <span data-t="gridLabel"></span>
-        <input type="checkbox" id="gridToggle" checked>
-      </label>
-    </div>
 
     <div class="settings-card">
       <h3 data-t="infoTitle"></h3>

@@ -437,6 +437,8 @@ const poseTracking = (() => {
     vibe.hidden=false;
     vibe.style.setProperty('--vibe',lastMatch.score+'%');
     document.querySelector('#vfVibeValue').textContent=lastMatch.score+'%';
+    // during an auto-shoot countdown the cue line says "hold it" (set by app.js)
+    if (document.querySelector('#countdown.is-auto:not([hidden])')) return;
     document.querySelector('#vfDirText').textContent=lastMatch.cue;
   }
   function crowdChip() {

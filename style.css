@@ -696,9 +696,10 @@ dialog { border-radius:26px; background:#fffafa; }
 @media (max-width:359px) { .brand-logo { height:30px; } }
 
 /* Pose-example countdown: centered on the viewfinder, light glass so the example pose stays visible */
-#poseIntro { pointer-events:auto; flex-wrap:wrap; justify-content:center; top:50%; bottom:auto; left:50%; transform:translate(-50%,-50%); flex-direction:column; align-items:center; text-align:center; gap:2px; padding:10px 14px 12px; width:min(220px,66%); background:rgba(255,255,255,.42); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); box-shadow:0 4px 16px rgba(0,0,0,.12); }
+#poseIntro { top:50%; bottom:auto; left:50%; transform:translate(-50%,-50%); flex-direction:column; align-items:center; text-align:center; gap:2px; padding:10px 14px 12px; width:min(220px,66%); background:rgba(255,255,255,.42); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); box-shadow:0 4px 16px rgba(0,0,0,.12); }
 #introNumber { font-size:52px; line-height:1; font-weight:700; text-shadow:0 1px 6px rgba(255,255,255,.6); }
-#poseIntro > span { font-size:11px; line-height:1.45; color:#4f3f4a; max-width:22em; }
+/* one sentence per line (the copy has line breaks) */
+#poseIntro > span { font-size:11px; line-height:1.5; color:#4f3f4a; max-width:22em; white-space:pre-line; text-wrap:initial; }
 #skipIntroBtn { flex-basis:auto; align-self:stretch; margin-top:5px; padding:5px 12px; font-size:12px; }
 
 /* ==================== THEMES: pink (default) / blue / dark ==================== */
@@ -1332,3 +1333,53 @@ body:not([data-active-tab="camera"]) .shutter-cam-ico {
 /* Credits: generative-AI disclosure */
 .credits-ai { margin:10px 0 4px; padding:10px 12px; border-radius:12px; background:var(--lav-soft); color:var(--ink); font-size:12px; line-height:1.6; }
 .credits-sub { margin:14px 0 4px; font-size:12px; font-weight:700; color:var(--muted); }
+
+/* Desktop: size the camera to the window height so the pose strip and shutter dock stay on screen
+   (previously the dock fell below the fold on laptops up to 1440×900). */
+@media (min-width: 860px) {
+  body[data-active-tab="camera"] .pages-shell { padding-top: 16px; padding-bottom: 12px; }
+  body[data-active-tab="camera"] .vf-zone { height: clamp(300px, calc(100dvh - var(--cam-chrome, 250px)), 640px); }
+  body[data-active-tab="camera"] .app-dock { margin-bottom: 12px; }
+}
+
+/* Settings sheet: two tabs ([촬영 도우미] / [카메라 설정]) so the sheet is short */
+.vf-sheet-tabs { display:flex; gap:4px; padding:3px; margin:0 0 12px; border-radius:99px; background:var(--soft); }
+.vf-sheet-tab { flex:1; padding:7px 10px; border:0; border-radius:99px; background:transparent; color:var(--muted); font-weight:700; font-size:13px; }
+.vf-sheet-tab[aria-selected="true"] { background:var(--surface); color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,.1); }
+.vf-sheet-pane[hidden] { display:none; }
+.vf-sheet-pane .vf-tools-actions { margin-bottom:12px; }
+.vf-sheet-pane .vf-settings-card { margin-top:0; }
+
+/* Saved: empty state with a way to the spot list */
+.saved-empty { display:flex; flex-direction:column; align-items:center; gap:12px; padding:24px 0 8px; }
+.saved-empty .empty-msg { margin:0; }
+
+/* Pose strip: fade at the right edge so it is clear more poses scroll in */
+.dark-pose-strip { -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent); mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent); }
+.dark-pose-strip.at-end { -webkit-mask-image:none; mask-image:none; }
+
+/* keep a scrolled-to section heading clear of the sticky app bar */
+.page-head { scroll-margin-top:60px; }
+
+/* Auto-shoot countdown: same spot as the timer, mint so it reads as "pose matched" */
+#countdown.is-auto { background:rgba(46,170,120,.6); box-shadow:0 0 0 6px rgba(46,170,120,.18); }
+
+/* AUTO (auto-shoot) toggle on the viewfinder: grey when off, mint when on (same mint as the countdown) */
+.vf-auto-btn { height:34px; padding:0 11px; border-radius:99px; border:1px solid rgba(255,255,255,.35); background:rgba(20,16,24,.45); color:rgba(255,255,255,.75); font:700 11.5px/1 'Quicksand','DM Sans',sans-serif; letter-spacing:.06em; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.vf-auto-btn[aria-pressed="true"] { background:rgba(46,170,120,.92); border-color:rgba(255,255,255,.7); color:#fff; box-shadow:0 0 0 3px rgba(46,170,120,.22); }
+.vf-auto-btn:active { transform:scale(.96); }
+
+/* Viewfinder top bar: the right-hand buttons keep their size; a long status message wraps to two lines
+   instead of running under the AUTO / flip / settings buttons on narrow phones */
+.vf-top-left { flex: 1 1 auto; }
+.vf-top-right { flex: none; }
+.match-pill { flex-shrink: 1; min-width: 0; line-height: 1.25; border-radius: 14px; }
+/* Status message (e.g. "Step back to include both feet") is read out by the photographer:
+   its own line, centred under the top buttons, large and high-contrast on every screen size. */
+.vf-top-left { position: static; }
+.match-pill {
+  position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: calc(100% - 8px); white-space: normal; text-align: center;
+  padding: 7px 14px; border-radius: 16px; font-size: 14px; line-height: 1.3; font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0,0,0,.22);
+}

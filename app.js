@@ -70,6 +70,7 @@ try {
   if (['16:9', '4:3', '1:1'].includes(localStorage.getItem('pilk-v5-ratio'))) director.ratio = localStorage.getItem('pilk-v5-ratio');
   director.autoCamera = localStorage.getItem('pilk-v5-auto-cam') !== '0';
   director.skipIntro = localStorage.getItem('pilk-v5-skip-intro') === '1';
+  director.autoShoot = localStorage.getItem('pilk-v5-auto-shoot') === '1';
 } catch {}
 
 function persist(k, v) {
@@ -205,14 +206,6 @@ function updateCameraUI() {
     facingState.textContent = t(isFront ? 'camFront' : 'camRear');
     facingState.classList.toggle('is-on', isFront);
   }
-  const isLiveCam = Boolean(director.stream);
-  $('#toggleCamBtn').classList.toggle('active', isLiveCam);
-  $('#toggleCamLabel').textContent = t(isLiveCam ? 'dockCamOff' : 'dockCamOn');
-  const camState = $('#toggleCamState');
-  if (camState) {
-    camState.textContent = isLiveCam ? 'ON' : 'OFF';
-    camState.classList.toggle('is-on', isLiveCam);
-  }
   const autoCamBtn = $('#autoCamToggleBtn');
   if (autoCamBtn) {
     autoCamBtn.setAttribute('aria-pressed', String(director.autoCamera));
@@ -223,8 +216,12 @@ function updateCameraUI() {
     autoCamState.textContent = director.autoCamera ? 'ON' : 'OFF';
     autoCamState.classList.toggle('is-on', director.autoCamera);
   }
-  $('#skeletonToggle').checked = director.showGuide;
   $('#skipIntroToggle').checked = director.skipIntro;
+  $('#autoShootToggle').checked = director.autoShoot;
+  const autoBtn = $('#vfAutoBtn');
+  autoBtn.setAttribute('aria-pressed', String(director.autoShoot));
+  autoBtn.setAttribute('aria-label', t('autoShootSetting'));
+  autoBtn.title = t('autoShootSetting');
   overlay.style.opacity = director.mode === 'B' ? Math.max(0.22, director.opacity / 220) : director.opacity / 100;
 
   $('#vfGrid').classList.toggle('hidden', poseExample || !director.showGrid);
@@ -244,7 +241,8 @@ function updateCameraUI() {
   vibe.style.setProperty('--vibe', hasScore ? coaching.score + '%' : '0%');
   $('#vfVibeValue').textContent = hasScore ? coaching.score + '%' : '—';
   const liveMatch = director.stream && poseTracking.match();
-  $('#vfDirText').textContent = liveMatch ? liveMatch.cue : poseExample || fullBody || r.people === 2 || ['shadow','high05'].includes(r.svgType) ? rt.shortCue : coaching.cue;
+  const autoCounting = !$('#countdown').hidden && $('#countdown').classList.contains('is-auto');
+  $('#vfDirText').textContent = autoCounting ? t('autoShootHint') : liveMatch ? liveMatch.cue : poseExample || fullBody || r.people === 2 || ['shadow','high05'].includes(r.svgType) ? rt.shortCue : coaching.cue;
 
   const stepStrip = $('#vfModeBStrip');
   stepStrip.classList.toggle('hidden', director.mode !== 'B');
@@ -276,6 +274,7 @@ function renderPoseStrip() {
     const badge = recipeBadges[r.svgType];
     return `<button type="button" class="dpose ${i === director.recipeIdx ? 'selected' : ''}" data-pose-idx="${i}"><img src="${poseImage(r)}" alt="">${rt.chip}${badge ? `<em class="dpose-badge">${badge[lang] || badge.ko}</em>` : ''}</button>`;
   }).join('');
+  requestAnimationFrame(syncStripFade);
 }
 
 // === Mobile-Safe Voice Coaching (Web Audio Unlock + iOS/Android SpeechSynthesis Fix) ===
@@ -465,7 +464,7 @@ function renderSpotsPage() {
         <div style="position:relative">
           <button type="button" class="spot-photo-btn" data-map-spot="${s.id}" aria-label="${a[0]}">
             <img src="assets/${s.image}" alt="${a[0]}" loading="lazy">
-            <span class="spot-badge">${s.recipe.flip ? t('flipShort') : s.recipe.lens}</span>
+            ${s.recipe.lens === '0.5×' ? `<span class="spot-badge">${t('badgeWide')}</span>` : ''}
           </button>
           <button type="button" class="spot-save ${isSaved ? 'is-saved' : ''}" data-save-spot="${s.id}" aria-label="Save">
             ${icon('bookmark')}
@@ -499,7 +498,8 @@ function renderSpotsPage() {
 function renderSavedPage() {
   const container = $('#savedContent');
   if (!claimedCoupons.length && !savedSpots.length) {
-    container.innerHTML = `<p class="empty-msg">${t('savedEmpty')}</p>`;
+    container.innerHTML = `<div class="saved-empty"><p class="empty-msg">${t('savedEmpty')}</p><button type="button" class="btn primary sm" id="savedBrowseBtn">${t('savedBrowse')}</button></div>`;
+    $('#savedBrowseBtn').onclick = () => { switchTab('nearby'); requestAnimationFrame(() => $('[data-t="spotsHeading"]').closest('.page-head').scrollIntoView({ behavior: 'smooth', block: 'start' })); };
     return;
   }
 
@@ -590,8 +590,6 @@ function stopCamera() {
   }
   const v = $('#stageVideo');
   if (v) { v.srcObject = null; v.style.display = 'none'; v.classList.remove('is-mirrored'); }
-  $('#toggleCamBtn').classList.remove('active');
-  $('#toggleCamLabel').textContent = t('dockCamOn');
   updateCameraUI();
 }
 
@@ -612,19 +610,12 @@ async function startCameraStream() {
     if (token !== director.cameraToken) return;
     v.style.display = 'block';
     v.classList.toggle('is-mirrored', director.facingMode === 'user');
-    $('#toggleCamBtn').classList.add('active');
-    $('#toggleCamLabel').textContent = t('dockCamOff');
     updateCameraUI();
     poseTracking.start();
     enableGyro();
   } catch {
     if (token === director.cameraToken) {stopCamera(); toast(t('cameraRetry'));}
   }
-}
-
-async function toggleCamera() {
-  if (director.stream) { stopCamera(); return; }
-  await startCameraStream();
 }
 
 async function switchCameraFacing() {
@@ -925,7 +916,18 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') setToolsMenuOpen(false);
 });
 
-$('#toggleCamBtn').onclick = () => { setToolsMenuOpen(false); toggleCamera(); };
+function syncStripFade() {
+  const strip = $('#poseStrip');
+  if (strip) strip.classList.toggle('at-end', strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4);
+}
+$('#poseStrip').addEventListener('scroll', syncStripFade, { passive: true });
+window.addEventListener('resize', syncStripFade);
+function showSheetPane(name) {
+  $$('.vf-sheet-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.sheetPane === name)));
+  $$('.vf-sheet-pane').forEach(p => { p.hidden = p.dataset.pane !== name; });
+  $('#vfToolsMenu').scrollTop = 0;
+}
+$$('.vf-sheet-tab').forEach(b => { b.onclick = () => showSheetPane(b.dataset.sheetPane); });
 $('#autoCamToggleBtn').onclick = () => {
   director.autoCamera = !director.autoCamera;
   persist('pilk-v5-auto-cam', director.autoCamera ? '1' : '0');
@@ -939,11 +941,14 @@ function cancelCountdown() {
   clearInterval(countdownInterval);
   countdownInterval = null;
   $('#countdown').hidden = true;
+  $('#countdown').classList.remove('is-auto');
 }
 $('#timerDelay').onchange = cancelCountdown;
 document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelCountdown(); stopCamera(); } });
 $('#shutterBtn').onclick = () => {
   if (activeTab !== 'camera') { switchTab('camera'); return; }
+  // Camera not running (auto-start off, intro countdown, permission retry): the shutter turns it on first.
+  if (!director.stream && !director.customPhotoUrl) { cancelCountdown(); startCameraStream(); return; }
   cancelPosePreview();
   if (countdownInterval !== null) return cancelCountdown();
   const delay = Number($('#timerDelay').value);
@@ -960,9 +965,54 @@ $('#shutterBtn').onclick = () => {
   },100);
 };
 $('#exportStoryBtn').onclick = () => captureViewfinder(true);
+
+// === Auto-shoot: once the live pose match holds ("perfect" = all limbs within 25° for 0.7 s),
+// count down 3 s and take the photo. Leaving the pose during the countdown cancels it.
+// The shutter, a tab switch or hiding the page cancel it too (shared countdownInterval).
+let autoCooldownUntil = 0;
+let autoNeedsRelease = false;   // after a shot, wait until the pose is left once before arming again
+function autoShootReady() {
+  return director.autoShoot && Boolean(director.stream) && activeTab === 'camera' && !document.hidden
+    && !$('#modal').open && $('#vfToolsMenu').hidden && !director.helperOpen;
+}
+function startAutoCountdown() {
+  const end = Date.now() + 3000;
+  const display = $('#countdown');
+  display.textContent = '3';
+  display.hidden = false;
+  display.classList.add('is-auto');
+  $('#vfDirText').textContent = t('autoShootHint');
+  let lostSince = 0;
+  countdownInterval = setInterval(() => {
+    const m = poseTracking.match();
+    if (!autoShootReady() || !m || m.score < 75) {
+      lostSince ||= Date.now();
+      if (Date.now() - lostSince > 400) {   // ignore a single dropped frame
+        cancelCountdown();
+        autoCooldownUntil = Date.now() + 1500;
+        if (autoShootReady()) toast(t('autoShootCancel'));
+        updateCameraUI();   // put the normal coaching line back
+      }
+      return;
+    }
+    lostSince = 0;
+    const remaining = Math.ceil((end - Date.now()) / 1000);
+    if (remaining > 0) { display.textContent = remaining; return; }
+    cancelCountdown();
+    autoCooldownUntil = Date.now() + 4000;
+    autoNeedsRelease = true;
+    captureViewfinder(false);
+  }, 100);
+}
+setInterval(() => {
+  if (!autoShootReady() || countdownInterval !== null) return;
+  const m = poseTracking.match();
+  if (!m?.perfect) { autoNeedsRelease = false; return; }
+  if (autoNeedsRelease || Date.now() < autoCooldownUntil) return;
+  startAutoCountdown();
+}, 200);
 $('#speakCueBtn').onclick = speakCoaching;
 $('#vfScanBtn').onclick = () => { setToolsMenuOpen(false); runBackgroundScan(true); };
-$('#rescanBtn').onclick = () => runBackgroundScan(true);
 $('#helperModeBtn').onclick = () => { setToolsMenuOpen(false); director.helperOpen = !director.helperOpen; updateCameraUI(); };
 $('#closeHelperBtn').onclick = () => { director.helperOpen = false; updateCameraUI(); };
 
@@ -1001,7 +1051,15 @@ function setGuide(on) {
   updateCameraUI();
 }
 $('#guideToggleBtn').onclick = () => { setGuide(!director.showGuide); toast(t(director.showGuide ? 'guideOn' : 'guideOff')); };
-$('#skeletonToggle').onchange = e => setGuide(e.target.checked);
+function setAutoShoot(on, notify) {
+  director.autoShoot = on;
+  persist('pilk-v5-auto-shoot', on ? '1' : '0');
+  if (!on) cancelCountdown();
+  updateCameraUI();
+  if (notify) toast(t(on ? 'autoShootOn' : 'autoShootOff'));
+}
+$('#autoShootToggle').onchange = e => setAutoShoot(e.target.checked, false);
+$('#vfAutoBtn').onclick = () => setAutoShoot(!director.autoShoot, true);
 $('#skipIntroToggle').onchange = e => { director.skipIntro = e.target.checked; persist('pilk-v5-skip-intro', e.target.checked ? '1' : '0'); };
 $('#skipIntroBtn').onclick = () => { cancelPosePreview(); startCameraStream(); };
 poseTracking.setVisible(director.showGuide);

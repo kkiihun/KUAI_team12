@@ -13,10 +13,8 @@ const copy = {
     modeA: 'AR',
     modeB: '3단계',
     modeC: '음성',
-    dockPhoto: '사진',
-    dockCamOn: '라이브',
-    dockCamOff: '끄기',
-    dockStory: '스토리',
+    dockPhoto: '불러오기',
+    dockStory: '스토리 저장',
     dockVoice: '음성',
     flipShort: '항공샷',
     footShort: '앞발',
@@ -34,7 +32,6 @@ const copy = {
     flipGuideInvertedNote: '팔은 화면 모서리에, 발끝은 멀리 작게',
     // Nearby page
     nearbyHeading: '주변 추천 · 쿠폰(예시)',
-    rescanBtn: '배경 스캔',
     openBigMap: '지도 앱 열기 ↗',
     claimCoupon: '예시 쿠폰 받기',
     couponClaimed: '예시 발급됨 ✓',
@@ -63,7 +60,9 @@ const copy = {
     savedHeading: '보관함',
     savedCouponsTitle: '받은 쿠폰 (예시)',
     savedSpotsTitle: '저장한 스팟',
-    savedEmpty: '아직 저장한 쿠폰이나 스팟이 없어요.',
+    savedEmpty: '아직 저장한 스팟이 없어요. 마음에 드는 스팟의 ♡를 눌러 보세요.',
+    savedBrowse: '스팟 둘러보기',
+    badgeWide: '0.5× 광각 추천',
     settingsTitle: '카메라 설정',
     opacityLabel: 'AR 가이드 투명도',
     gridLabel: '발끝선 · 3분할 격자',
@@ -94,26 +93,23 @@ const copy = {
     modeA: 'AR',
     modeB: 'Steps',
     modeC: 'Voice',
-    dockPhoto: 'Upload',
-    dockCamOn: 'Live',
-    dockCamOff: 'Stop',
-    dockStory: 'Story',
+    dockPhoto: 'Import',
+    dockStory: 'Save Story',
     dockVoice: 'Voice',
     flipShort: 'High Angle',
-    footShort: 'Foot+',
+    footShort: 'Front Foot',
     distClose: 'Back',
     distBest: 'Best',
     distFar: 'Closer',
-    helperTitle: 'Show to Photographer',
+    helperTitle: 'Show this to your photographer',
     helperClose: 'Back',
     flipGuideTitle: '📐 What is a "High-Angle Shot"?',
-    flipGuideDesc: 'Extend one arm above your crown and aim the phone straight down toward your shoes.',
+    flipGuideDesc: 'Hold the phone straight up above your head and point the lens down at your feet.',
     flipGuideNormal: 'Eye-Level Shot',
-    flipGuideNormalNote: 'Straight ahead → flat & stiff',
+    flipGuideNormalNote: 'Straight on → looks flat and stiff',
     flipGuideInverted: 'Overhead wide selfie',
-    flipGuideInvertedNote: 'Let your arm enter a corner and your shoes recede.',
+    flipGuideInvertedNote: 'Keep your arm in a corner and your feet small in the distance.',
     nearbyHeading: 'Nearby & Sample Coupons',
-    rescanBtn: 'Scan Scene',
     openBigMap: 'Open Maps ↗',
     claimCoupon: 'Get Sample Coupon',
     couponClaimed: 'Sample Saved ✓',
@@ -139,7 +135,9 @@ const copy = {
     savedHeading: 'Saved',
     savedCouponsTitle: 'Sample Coupons',
     savedSpotsTitle: 'Spots',
-    savedEmpty: 'Nothing saved yet.',
+    savedEmpty: 'Nothing saved yet. Tap ♡ on a spot to keep it here.',
+    savedBrowse: 'Browse spots',
+    badgeWide: 'Best with 0.5×',
     settingsTitle: 'Camera Settings',
     opacityLabel: 'AR Guide Opacity',
     gridLabel: 'Foot Line & Grid',
@@ -156,8 +154,8 @@ const copy = {
     toastVoice: 'Playing voice guide',
     toastPhotoSaved: 'Photo saved!',
     toastStorySaved: 'IG Story card saved!',
-    toastCameraFail: 'Camera unavailable — using scene demo.',
-    toastScanned: 'Scene recognized! Check nearby spots.'
+    toastCameraFail: 'Camera unavailable. Showing the example image instead.',
+    toastScanned: 'Scan complete! Check out nearby spots.'
   },
   ja: {
     tabCam: 'カメラ',
@@ -169,10 +167,8 @@ const copy = {
     modeA: 'AR',
     modeB: 'ステップ',
     modeC: 'ボイス',
-    dockPhoto: 'アルバム',
-    dockCamOn: 'カメラON',
-    dockCamOff: 'カメラOFF',
-    dockStory: 'ストーリー',
+    dockPhoto: '読み込み',
+    dockStory: 'ストーリー保存',
     dockVoice: 'ボイス',
     flipShort: '真上ショット',
     footShort: '片足前',
@@ -184,11 +180,10 @@ const copy = {
     flipGuideTitle: '📐 「真上ショット」ってなに？',
     flipGuideDesc: '片腕を頭の上までまっすぐ伸ばして、レンズを足元に向けます。顔が小さく、脚が長く見える人気の撮り方です。',
     flipGuideNormal: '通常の目線撮影',
-    flipGuideNormalNote: '正面アングル → 普通で硬い印象',
+    flipGuideNormalNote: '正面アングル → 平凡でかたい印象',
     flipGuideInverted: '真上からの広角セルフィー',
     flipGuideInvertedNote: '腕は画面の角に、靴は奥に小さく入れるのがコツ',
     nearbyHeading: '近くのおすすめ・クーポン（例）',
-    rescanBtn: '背景チェック',
     openBigMap: 'マップを開く ↗',
     claimCoupon: 'クーポンをもらう（例）',
     couponClaimed: 'ゲット済み ✓',
@@ -215,6 +210,8 @@ const copy = {
     savedCouponsTitle: 'もらったクーポン（例）',
     savedSpotsTitle: '行きたいスポット',
     savedEmpty: 'まだ何もありません。気になるスポットの ♡ をタップしてね',
+    savedBrowse: 'スポットを見る',
+    badgeWide: '0.5倍広角がおすすめ',
     settingsTitle: 'カメラ設定',
     opacityLabel: 'ARガイドの濃さ',
     gridLabel: '足元ライン・グリッド線',
@@ -251,15 +248,15 @@ const kRecipes = [
     },
     en: {
       chip: 'High Angle',
-      shortCue: 'Reach above your crown and point the lens toward your feet.',
+      shortCue: 'Hold the phone above your head and point the lens at your feet.',
       steps: ['Use ultra-wide if available', 'Extend one arm overhead', 'Frame your arm and shoes'],
-      helperText: 'Extend one arm above your crown and aim the phone straight down toward your shoes.'
+      helperText: 'Hold the phone straight up above your head and point the lens down at your feet.'
     },
     ja: {
       chip: '真上ショット',
       shortCue: 'スマホを頭の真上に掲げて、レンズを足元に向けてみて',
       steps: ['0.5倍の超広角がおすすめ', '片腕を頭の真上へ', '腕と足先を一緒に入れる'],
-      helperText: '片腕を頭上へ伸ばし、レンズを足元に向けます。近くの頭や腕が大きく写ります。'
+      helperText: '片腕を頭上へ伸ばし、レンズを足元に向けます。カメラに近い頭や腕が大きく写ります。'
     }
   },
   {
@@ -278,7 +275,7 @@ const kRecipes = [
       chip: 'Full Body',
       shortCue: 'Turn slightly sideways and take an easy step.',
       steps: ['Include the roofline', 'Stand slightly off-center', 'Catch a natural step'],
-      helperText: '① Hold camera at waist height\n② Align toes on the bottom dashed line\n③ Capture a natural step!'
+      helperText: '① Hold the camera at waist height\n② Line up my toes with the bottom dashed line\n③ Catch me mid-step!'
     },
     ja: {
       chip: '全身スタイルアップ',
@@ -302,7 +299,7 @@ const kRecipes = [
     en: {
       chip: 'Look Back',
       shortCue: 'Walk slowly & glance back mid-step',
-      steps: ['Step back', 'Walk & turn', 'Burst 3–4'],
+      steps: ['Step back', 'Walk & look back', 'Take 3–4 in a row'],
       helperText: '① Step one pace back\n② Tap shutter 3–4 times as I look back\n③ Keep feet on the bottom line!'
     },
     ja: {
@@ -326,9 +323,9 @@ const kRecipes = [
     },
     en: {
       chip: 'Mirror',
-      shortCue: 'Angle 15° to mirror & step front foot out',
+      shortCue: 'Turn 15° from the mirror and put your front foot forward',
       steps: ['Angle 15°', 'Foot forward', 'Full outfit'],
-      helperText: '① Stand 15° angled to mirror\n② Extend front foot half a step\n③ Include down to shoes!'
+      helperText: '① Stand at a 15° angle to the mirror\n② Put your front foot half a step forward\n③ Get your shoes in the frame!'
     },
     ja: {
       chip: '鏡越しコーデ',
@@ -352,7 +349,7 @@ const kRecipes = [
     en: {
       chip: 'Cat Shadow',
       shortCue: 'Crouch and bring your arms in front of your face. Watch the ears form on the ground.',
-      steps: ['Light behind your left side', 'Crouch with arms in front', 'Angle fingertips to shape the ears'],
+      steps: ['Keep the light behind you, on the left', 'Crouch with arms in front', 'Angle fingertips to shape the ears'],
       helperText: 'Shoot diagonally from above. Frame the crouching person on the left and the shadow on the right. Adjust fingertips while watching the shadow.'
     },
     ja: {
@@ -377,8 +374,8 @@ const kRecipes = [
     en: {
       chip: 'Cheek Poke',
       shortCue: 'Eye level, finger on cheek, tilt head 10°',
-      steps: ['Step closer', 'Finger cheek', 'Frame drink'],
-      helperText: '① Step closer at eye level\n② Keep cafe drink in foreground\n③ Focus on upper body!'
+      steps: ['Step closer', 'Finger on your cheek', 'Include your drink'],
+      helperText: '① Step closer at eye level\n② Keep the drink in the foreground\n③ Focus on my upper body!'
     },
     ja: {
       chip: 'ほっぺツン',
@@ -390,9 +387,9 @@ const kRecipes = [
 ];
 
 // Display extras: K-vibe meter label and pose badges (Japanese users scan for 人気/トレンド cues).
-Object.assign(copy.ko, {themeLabel:'테마 색상',themePink:'핑크',themeBlue:'블루',themeDark:'다크',btnGuide:'가이드 표시/숨기기',btnSwitch:'전면/후면 카메라 전환',btnHelper:'찍어주는 분께 보여줄 안내',guideOn:'가이드 표시',guideOff:'가이드 숨김',toolsMenu:'기능',btnScan:'배경 스캔',menuGuide:'가이드',menuSwitch:'카메라 전환',menuHelper:'촬영 안내 카드',menuAutoCam:'자동 켜기',autoCamOn:'카메라 자동 켜기 ON',autoCamOff:'카메라 자동 켜기 OFF',camFront:'전면',camRear:'후면',skipIntro:'바로 카메라 ›',skipIntroSetting:'예시 포즈 건너뛰고 바로 카메라 켜기',skeletonSetting:'자세 가이드 선 표시',vibeLabel:'포즈 일치도', eyebrowCam:'Camera', tagline:'여행 사진 포즈 코치'});
-Object.assign(copy.en, {themeLabel:'Theme',themePink:'Pink',themeBlue:'Blue',themeDark:'Dark',btnGuide:'Show/hide guide',btnSwitch:'Switch front/rear camera',btnHelper:'Guide card for your photographer',guideOn:'Guide shown',guideOff:'Guide hidden',toolsMenu:'Tools',btnScan:'Scan Scene',menuGuide:'Guide',menuSwitch:'Flip Camera',menuHelper:'Helper Card',menuAutoCam:'Auto Camera',autoCamOn:'Auto-start camera ON',autoCamOff:'Auto-start camera OFF',camFront:'Front',camRear:'Rear',skipIntro:'Camera now ›',skipIntroSetting:'Skip the example pose and open the camera',skeletonSetting:'Show pose guide lines',vibeLabel:'Pose match', eyebrowCam:'Camera', tagline:'Your travel photo pose coach'});
-Object.assign(copy.ja, {themeLabel:'テーマカラー',themePink:'ピンク',themeBlue:'ブルー',themeDark:'ダーク',btnGuide:'ガイドの表示/非表示',btnSwitch:'イン/アウトカメラ切替',btnHelper:'撮ってくれる方への説明カード',guideOn:'ガイドを表示',guideOff:'ガイドを非表示',toolsMenu:'機能',btnScan:'背景スキャン',menuGuide:'ガイド',menuSwitch:'カメラ切替',menuHelper:'撮影案内カード',menuAutoCam:'自動起動',autoCamOn:'カメラ自動起動 ON',autoCamOff:'カメラ自動起動 OFF',camFront:'イン',camRear:'アウト',skipIntro:'すぐ撮る ›',skipIntroSetting:'お手本をとばしてすぐカメラを起動',skeletonSetting:'ポーズガイド線を表示',vibeLabel:'ポーズ一致度', eyebrowCam:'Camera', tagline:'旅フォトのポーズコーチ'});
+Object.assign(copy.ko, {themeLabel:'테마 색상',themePink:'핑크',themeBlue:'블루',themeDark:'다크',btnGuide:'가이드 표시/숨기기',btnSwitch:'전면/후면 카메라 전환',btnHelper:'찍어주는 분께 보여줄 안내',guideOn:'가이드 표시',guideOff:'가이드 숨김',toolsMenu:'설정',autoShootSetting:'포즈가 맞으면 자동 촬영',autoShootCancel:'포즈가 흐트러져서 촬영을 취소했어요',autoShootHint:'그대로! 곧 찍어요',autoShootOn:'자동 촬영 ON · 포즈가 맞으면 3초 뒤 찍어요',autoShootOff:'자동 촬영 OFF',sheetShoot:'촬영 도우미',sheetSettings:'카메라 설정',btnScan:'배경 스캔',menuGuide:'가이드',menuSwitch:'카메라 전환',menuHelper:'촬영 안내 카드',menuAutoCam:'자동 켜기',autoCamOn:'카메라 자동 켜기 ON',autoCamOff:'카메라 자동 켜기 OFF',camFront:'전면',camRear:'후면',skipIntro:'바로 촬영 ›',skipIntroSetting:'예시 포즈 건너뛰고 바로 카메라 켜기',skeletonSetting:'자세 가이드 선 표시',vibeLabel:'포즈 일치도', eyebrowCam:'Camera', tagline:'여행 사진 포즈 코치'});
+Object.assign(copy.en, {themeLabel:'Theme',themePink:'Pink',themeBlue:'Blue',themeDark:'Dark',btnGuide:'Show/hide guide',btnSwitch:'Switch front/rear camera',btnHelper:'Guide card for your photographer',guideOn:'Guide shown',guideOff:'Guide hidden',toolsMenu:'Settings',autoShootSetting:'Auto-shoot when the pose matches',autoShootCancel:'Pose lost, so the shot was cancelled',autoShootHint:'Hold it! Taking the photo…',autoShootOn:'Auto-shoot ON · shoots 3 s after your pose matches',autoShootOff:'Auto-shoot OFF',sheetShoot:'Shooting help',sheetSettings:'Camera settings',btnScan:'Scan Scene',menuGuide:'Guide',menuSwitch:'Flip Camera',menuHelper:'Helper Card',menuAutoCam:'Auto-start',autoCamOn:'Auto-start camera ON',autoCamOff:'Auto-start camera OFF',camFront:'Front',camRear:'Rear',skipIntro:'Shoot now ›',skipIntroSetting:'Skip the example pose and open the camera',skeletonSetting:'Show pose guide lines',vibeLabel:'Pose match', eyebrowCam:'Camera', tagline:'Your travel photo pose coach'});
+Object.assign(copy.ja, {themeLabel:'テーマカラー',themePink:'ピンク',themeBlue:'ブルー',themeDark:'ダーク',btnGuide:'ガイドの表示/非表示',btnSwitch:'イン/アウトカメラ切替',btnHelper:'撮ってくれる方への説明カード',guideOn:'ガイドを表示',guideOff:'ガイドを非表示',toolsMenu:'設定',autoShootSetting:'ポーズが合ったら自動で撮影',autoShootCancel:'ポーズがくずれたので撮影を中止しました',autoShootHint:'そのまま！もうすぐ撮ります',autoShootOn:'自動撮影 ON・ポーズが合うと3秒後に撮影',autoShootOff:'自動撮影 OFF',sheetShoot:'撮影サポート',sheetSettings:'カメラ設定',btnScan:'背景スキャン',menuGuide:'ガイド',menuSwitch:'カメラ切替',menuHelper:'撮影案内カード',menuAutoCam:'自動起動',autoCamOn:'カメラ自動起動 ON',autoCamOff:'カメラ自動起動 OFF',camFront:'イン',camRear:'アウト',skipIntro:'すぐ撮る ›',skipIntroSetting:'お手本をとばしてすぐカメラを起動',skeletonSetting:'ポーズガイド線を表示',vibeLabel:'ポーズ一致度', eyebrowCam:'Camera', tagline:'旅フォトのポーズコーチ'});
 const recipeBadges = {
   high05:{ko:'트렌드',en:'Trend',ja:'トレンド'},
   flip:{ko:'인기 1위',en:'#1',ja:'人気No.1'},
@@ -403,21 +400,21 @@ const recipeBadges = {
 const howtoCopy = {
   ko:{btn:'이용 안내',title:'Pilk 사용법',sub:'4단계면 여행 인생샷 완성!',start:'시작하기',steps:[
     ['🧍','포즈 고르기','카메라 아래 목록에서 따라 할 예시 포즈를 골라요. 처음이라면 「인기 1위」 전신 비율 추천!'],
-    ['📸','카메라 비추기','몸 위에 선이 겹쳐요. 흰 점선이 예시 포즈, 빨갛게 빛나는 부분을 고치면 「포즈 일치도」가 올라가요. 👁 버튼으로 선을 숨길 수 있어요.'],
+    ['📸','카메라 비추기','몸 위에 선이 겹쳐요. 흰 점선이 예시 포즈, 빨갛게 빛나는 부분을 고치면 「포즈 일치도」가 올라가요. ⚙️ 설정의 「가이드」로 선을 숨길 수 있어요.'],
     ['👆','사람이 많을 땐','찍고 싶은 사람을 화면에서 탭하면 그 사람만 따라가며 코칭해요.'],
-    ['✨','찍고 공유하기','셔터로 저장·편집, 「스토리」로 인스타용 카드를 만들어요. 👥 버튼은 찍어주는 분께 보여줄 안내 카드예요.']],
+    ['✨','찍고 공유하기','셔터로 저장·편집, 「스토리 저장」으로 인스타용 카드를 만들어요. ⚙️ 설정의 「촬영 안내 카드」는 찍어주는 분께 보여줄 안내예요.']],
     privacy:'🔒 카메라 영상과 사진은 기기 안에서만 처리되고 외부로 전송되지 않아요.'},
   en:{btn:'How to use',title:'How to use Pilk',sub:'Four steps to a better travel shot',start:"Let's go",steps:[
     ['🧍','Pick a pose','Choose an example pose under the camera. New here? Try the #1 “Full Body”.'],
-    ['📸','Point the camera','Lines appear on your body. The white dotted line is the example; fix the part glowing red to raise your pose match score. Hide the lines with 👁.'],
+    ['📸','Point the camera','Lines appear on your body. The white dotted line is the example; fix the part glowing red to raise your pose match score. Hide the lines with “Guide” in ⚙️ settings.'],
     ['👆','Crowded spot?','Tap the person you want to shoot and Pilk follows only them.'],
-    ['✨','Shoot & share','Save and edit with the shutter, or make an Instagram card with “Story”. 👥 shows a guide card for whoever is taking your photo.']],
+    ['✨','Shoot & share','Save and edit with the shutter, or make an Instagram card with “Save Story”. “Helper Card” in ⚙️ settings shows a guide for whoever is taking your photo.']],
     privacy:'🔒 Camera frames and photos are processed on your device and never uploaded.'},
   ja:{btn:'使い方',title:'Pilkの使い方',sub:'4ステップで、旅の写真がもっと素敵に ♡',start:'はじめる',steps:[
     ['🧍','ポーズを選ぶ','カメラの下からお手本ポーズを選びます。はじめての方は「人気No.1」の全身スタイルアップがおすすめ！'],
-    ['📸','カメラを向ける','体にガイド線が重なります。白い点線がお手本、赤く光る部分を直すと「ポーズ一致度」がアップ。👁ボタンで線を隠せます。'],
+    ['📸','カメラを向ける','体にガイド線が重なります。白い点線がお手本、赤く光る部分を直すと「ポーズ一致度」がアップ。⚙️設定の「ガイド」で線を隠せます。'],
     ['👆','人が多いときは','撮りたい人を画面でタップすると、その人だけを追いかけてアドバイスします。'],
-    ['✨','撮ってシェア','シャッターで保存・編集、「ストーリー」でインスタ用カードに。👥ボタンは撮ってくれる方に見せる説明カードです。']],
+    ['✨','撮ってシェア','シャッターで保存・編集、「ストーリー保存」でインスタ用カードに。⚙️設定の「撮影案内カード」は撮ってくれる方に見せる説明です。']],
     privacy:'🔒 カメラ映像と写真はスマホの中だけで処理され、外部に送信されません。'}
 };
 
@@ -443,7 +440,7 @@ kRecipes.push(
     ko: {chip:'나란히 걷기', shortCue:'카메라에서 같은 거리로 나란히, 함께 한 걸음 내디뎌요',
       steps:['같은 거리에 나란히', '손을 잡거나 가까이', '같은 발로 한 걸음'],
       helperText:'① 허리 높이에서 두 사람 전신을\n② 발끝까지 화면에 담아주세요\n③ 걸음을 내딛는 순간 연속으로!'},
-    en: {chip:'Walk Together', shortCue:'Side by side at the same distance, step out together',
+    en: {chip:'Walk Together', shortCue:'Stand side by side, the same distance from the camera, and step out together',
       steps:['Same distance from camera', 'Hold hands or stay close', 'Step out together'],
       helperText:'① Shoot both of us full-length at waist height\n② Include our feet\n③ Burst as we step!'},
     ja: {chip:'並んで歩く', shortCue:'カメラから同じ距離で並んで、一緒に一歩ふみ出して',
@@ -467,5 +464,5 @@ kRecipes.push(
 );
 Object.assign(recipeBadges, {pair_heart:{ko:'커플',en:'Couple',ja:'カップル'}});
 Object.assign(copy.ko, {soloMode:'혼자', pairMode:'둘이서'});
-Object.assign(copy.en, {soloMode:'Solo', pairMode:'Two'});
+Object.assign(copy.en, {soloMode:'Solo', pairMode:'Pair'});
 Object.assign(copy.ja, {soloMode:'ひとり', pairMode:'ふたり'});
