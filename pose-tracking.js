@@ -421,13 +421,19 @@ const poseTracking = (() => {
     const el=document.querySelector('#vfMatchScore');
     if (el) el.textContent=status();
     const pill=document.querySelector('#vfMatchPill');
-    if (pill) pill.classList.toggle('ok',current===5||current===6||current===10||current===11);
+    if (pill) {pill.hidden=!status();pill.classList.toggle('ok',current===5||current===6||current===10||current===11);}
   }
   function paintMatch(now) {
-    if (!lastMatch || now-lastDom<250) return;
+    if (now-lastDom<250) return;
     lastDom=now;
     const vibe=document.querySelector('#vfVibe');
     if (!vibe) return;
+    if (!lastMatch) {
+      // Nobody measured (left the frame, or no template): clear the meter instead of keeping the old value.
+      vibe.style.setProperty('--vibe','0%');
+      document.querySelector('#vfVibeValue').textContent='—';
+      return;
+    }
     vibe.hidden=false;
     vibe.style.setProperty('--vibe',lastMatch.score+'%');
     document.querySelector('#vfVibeValue').textContent=lastMatch.score+'%';
@@ -477,7 +483,7 @@ const poseTracking = (() => {
     }
     if (!subject || now-subject.lastSeen>HOLD_SUBJECT_MS) {
       subject=null;lastMatch=null;
-      setStatus(1);paintCrowd();return;
+      setStatus(1);paintCrowd();paintMatch(now);return;
     }
     const holding=subject.cand===null;
     const dots=subject.joints.map(j=>{
@@ -528,7 +534,7 @@ const poseTracking = (() => {
 
   // Guide hidden: same subject tracking, score and cues, but nothing drawn over the person.
   function analyseOnly(L,now) {
-    if (!subject || now-subject.lastSeen>HOLD_SUBJECT_MS) {subject=null;lastMatch=null;setStatus(1);paintCrowd();return;}
+    if (!subject || now-subject.lastSeen>HOLD_SUBJECT_MS) {subject=null;lastMatch=null;setStatus(1);paintCrowd();paintMatch(now);return;}
     evaluate(now);paintMatch(now);
     if (subject.cand===null) {setStatus(8);paintCrowd();return;}
     const ok=i=>{const j=subject.joints[i];const s=toScreen(j,L);return (j.v>=VIS||j.held)&&s.x>=0&&s.x<=L.w&&s.y>=0&&s.y<=L.h;};

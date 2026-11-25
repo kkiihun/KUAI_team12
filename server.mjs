@@ -41,6 +41,8 @@ const server = http.createServer(async (req, res) => {
   }
   const ext = path.extname(safePath).toLowerCase();
   res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
+  // Always revalidate code so a refresh picks up edits (no manual ?v= bumps needed).
+  if (['.html', '.js', '.css', '.webmanifest'].includes(ext)) res.setHeader('Cache-Control', 'no-cache');
   fs.createReadStream(safePath).pipe(res);
 });
 

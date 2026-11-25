@@ -140,32 +140,26 @@ function computeCoaching() {
   if (live) return live;
   const r = getActiveRecipe();
   const rt = r[lang] || r.ko;
-  let score = 100;
+  // No person has been measured, so there is no score: only the setting-based tips below remain.
   let cue = '';
 
   if (r.recommendedFlip && !director.flip180) {
-    score -= 22;
     cue = rt.shortCue;
   } else if (r.recommendedLens === '0.5×' && director.lens !== '0.5×') {
-    score -= 18;
     cue = lang === 'ko' ? '📐 0.5× 광각으로 전환하세요' : lang === 'ja' ? '📐 0.5倍の超広角に切り替えてね' : '📐 Switch to 0.5× ultra-wide';
   } else if (director.distance === -1) {
-    score -= 20;
     cue = lang === 'ko' ? '👣 한 보 뒤로 가세요' : lang === 'ja' ? '👣 撮る人は一歩うしろへ' : '👣 Step back 1 pace';
   } else if (director.distance === 1) {
-    score -= 16;
     cue = lang === 'ko' ? '👣 반 보 앞으로 · 발끝 정렬' : lang === 'ja' ? '👣 半歩前へ・足元をラインに合わせて' : '👣 Half step closer to foot line';
   } else if (r.recommendedFrontFoot && !director.frontFoot) {
-    score -= 12;
     cue = lang === 'ko' ? '🦶 앞발을 반 걸음 앞으로 빼세요' : lang === 'ja' ? '🦶 前足を半歩出すと脚長に見えます' : '🦶 Extend front foot half a step';
   } else if (Math.abs(director.tiltDeg) > 6) {
-    score -= 10;
     cue = lang === 'ko' ? `⚖️ 수평 맞추기 (${director.tiltDeg}°)` : lang === 'ja' ? `⚖️ スマホをまっすぐに (${director.tiltDeg}°)` : `⚖️ Level phone (${director.tiltDeg}°)`;
   } else {
-    if (!r.recommendedFlip && director.flip180) score -= 6;
-    cue = lang === 'ko' ? `✨ 완벽해요! 지금 촬영하세요 · ${rt.chip}` : lang === 'ja' ? `✨ バッチリ！今がシャッターチャンス · ${rt.chip}` : `✨ Perfect angle! Snap now · ${rt.chip}`;
+    // Settings look fine, but nobody has been measured yet: give the pose hint, never "perfect".
+    cue = rt.shortCue;
   }
-  return { score: Math.max(48, score), cue };
+  return { score: null, cue };
 }
 
 function updateCameraUI() {
@@ -236,16 +230,19 @@ function updateCameraUI() {
   $('#vfGrid').classList.toggle('hidden', poseExample || !director.showGrid);
   $('#vfFootLine').classList.toggle('hidden', poseExample || !director.showGrid || ['cheek','shadow','high05','pair_heart','pair_back'].includes(r.svgType));
 
+  const hasScore = typeof coaching.score === 'number';
+  const trackStatus = director.stream ? poseTracking.status() : '';
   const matchPill = $('#vfMatchPill');
-  matchPill.hidden = poseExample;
-  if (!poseExample) {
-    $('#vfMatchScore').textContent = poseTracking.status() || `${coaching.score}%`;
-    matchPill.classList.toggle('warn', coaching.score < 85);
+  matchPill.hidden = poseExample || (!trackStatus && !hasScore);
+  if (!matchPill.hidden) {
+    $('#vfMatchScore').textContent = trackStatus || `${coaching.score}%`;
+    matchPill.classList.toggle('warn', hasScore && coaching.score < 85);
   }
   const vibe = $('#vfVibe');
-  vibe.hidden = poseExample || (r.people === 2 && r.judge === false);
-  vibe.style.setProperty('--vibe', coaching.score + '%');
-  $('#vfVibeValue').textContent = coaching.score + '%';
+  // The match meter only makes sense while the live camera is analysing someone.
+  vibe.hidden = poseExample || !director.stream || (r.people === 2 && r.judge === false);
+  vibe.style.setProperty('--vibe', hasScore ? coaching.score + '%' : '0%');
+  $('#vfVibeValue').textContent = hasScore ? coaching.score + '%' : '—';
   const liveMatch = director.stream && poseTracking.match();
   $('#vfDirText').textContent = liveMatch ? liveMatch.cue : poseExample || fullBody || r.people === 2 || ['shadow','high05'].includes(r.svgType) ? rt.shortCue : coaching.cue;
 
@@ -738,7 +735,8 @@ function captureViewfinder(asStory = false) {
     ctx.font = `700 30px ${sans}, sans-serif`;
     ctx.fillStyle = '#8d6b7b';
     ctx.fillText(t('tagline'), tagX, 148);
-    // vibe sticker (tilted)
+    // vibe sticker (tilted) — only when a real pose match was measured
+    if (typeof score === 'number') {
     ctx.save();
     ctx.translate(W - pad - 120, topY + 40);
     ctx.rotate(0.12);
@@ -751,6 +749,7 @@ function captureViewfinder(asStory = false) {
     ctx.font = '700 66px "Quicksand", sans-serif';
     ctx.fillText(`${score}%`, 0, 48);
     ctx.restore();
+    }
     // caption on polaroid
     ctx.textAlign = 'left';
     ctx.fillStyle = '#3d2f3a';
